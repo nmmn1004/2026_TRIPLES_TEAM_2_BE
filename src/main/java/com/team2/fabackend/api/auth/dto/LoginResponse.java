@@ -1,4 +1,4 @@
-package com.team2.fabackend.api.user.dto;
+package com.team2.fabackend.api.auth.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;

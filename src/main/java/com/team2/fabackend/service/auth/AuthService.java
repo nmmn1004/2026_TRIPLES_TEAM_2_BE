@@ -1,10 +1,9 @@
 package com.team2.fabackend.service.auth;
 
-import com.team2.fabackend.api.user.dto.LoginRequest;
-import com.team2.fabackend.api.user.dto.LoginResponse;
-import com.team2.fabackend.api.user.dto.SignupRequest;
-import com.team2.fabackend.api.user.dto.SignupResponse;
-import com.team2.fabackend.api.user.dto.TokenPair;
+import com.team2.fabackend.api.auth.dto.LoginRequest;
+import com.team2.fabackend.api.auth.dto.SignupRequest;
+import com.team2.fabackend.api.auth.dto.SignupResponse;
+import com.team2.fabackend.api.auth.dto.TokenPair;
 import com.team2.fabackend.domain.user.User;
 import com.team2.fabackend.global.enums.SocialType;
 import com.team2.fabackend.global.security.JwtProvider;
@@ -13,7 +12,6 @@ import com.team2.fabackend.service.user.UserReader;
 import com.team2.fabackend.service.user.UserWriter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

@@ -1,4 +1,4 @@
-package com.team2.fabackend.api.user.dto;
+package com.team2.fabackend.api.phone.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;

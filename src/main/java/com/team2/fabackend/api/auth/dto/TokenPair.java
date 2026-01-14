@@ -1,4 +1,4 @@
-package com.team2.fabackend.api.user.dto;
+package com.team2.fabackend.api.auth.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

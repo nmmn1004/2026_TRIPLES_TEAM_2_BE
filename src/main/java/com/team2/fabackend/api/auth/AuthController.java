@@ -1,12 +1,12 @@
-package com.team2.fabackend.api.user;
+package com.team2.fabackend.api.auth;
 
-import com.team2.fabackend.api.user.dto.LoginRequest;
-import com.team2.fabackend.api.user.dto.LoginResponse;
-import com.team2.fabackend.api.user.dto.PhoneSendRequest;
-import com.team2.fabackend.api.user.dto.PhoneVerifyRequest;
-import com.team2.fabackend.api.user.dto.RefreshRequest;
-import com.team2.fabackend.api.user.dto.SignupRequest;
-import com.team2.fabackend.api.user.dto.TokenPair;
+import com.team2.fabackend.api.auth.dto.LoginRequest;
+import com.team2.fabackend.api.auth.dto.LoginResponse;
+import com.team2.fabackend.api.auth.dto.RefreshRequest;
+import com.team2.fabackend.api.auth.dto.SignupRequest;
+import com.team2.fabackend.api.auth.dto.TokenPair;
+import com.team2.fabackend.api.phone.dto.PhoneSendRequest;
+import com.team2.fabackend.api.phone.dto.PhoneVerifyRequest;
 import com.team2.fabackend.service.PhoneVerification.PhoneVerificationService;
 import com.team2.fabackend.service.auth.AuthService;
 import io.swagger.v3.oas.annotations.Operation;
