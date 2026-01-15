@@ -11,10 +11,12 @@ spring:
     database-platform: org.hibernate.dialect.MySQL8Dialect
     hibernate:
       ddl-auto: update
+      dialect: org.hibernate.dialect.MySQLDialect
     properties:
       hibernate:
         show-sql: true
-        format_sql: false
+        format_sql: true
+        highlight_sql: true # 하이라이트 SQL 출력
         use_sql_comments: true
 
 jwt:
