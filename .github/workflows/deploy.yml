@@ -54,7 +54,7 @@ jobs:
           username:  ${{ secrets.EC2_USERNAME }}
           key:       ${{ secrets.EC2_SSH_KEY }}
           script: |
-            cd ~/fa-project
+            cd ~/2026_TRIPLES_TEAM_2_BE
 
             # .env 파일 생성
             cat <<EOF > .env
@@ -75,5 +75,5 @@ jobs:
             EOF
 
             # Docker Compose 실행
-            docker compose pull
-            docker compose up -d --remove-orphans
+            docker-compose pull
+            docker-compose up -d --remove-orphans
