@@ -1,7 +1,9 @@
 # 2026_TRIPLES_TEAM_2_BE
 대학 연합 프로젝트 TripleS BE 2팀 레파지토리입니다.
 
-# 프로젝트 개발자들은 이렇게...
+## 프로젝트 개발자들은 이렇게...
+
+### 프로젝트를 시작하는 방법
   1. 프로젝트를 클론 합니다.
      </br>
   ```git clone <repository-url>```
@@ -16,3 +18,12 @@
   8. 컨테이너를 확인합니다.
      </br>
   ```docker ps```
+
+### 기여 방식
+[CONTRIBUTING.md](CONTRIBUTING.md)
+
+### 이슈 생성
+[ISSUE_TEMPLATES](./.github/ISSUE_TEMPLATE)
+
+### PR 생성
+[PULL_REQUEST_TEMPLATE.md](./.github/PULL_REQUEST_TEMPLATE.md)

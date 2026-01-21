@@ -35,9 +35,9 @@ jobs:
       # 4️⃣ Docker 이미지 빌드
       - name: Build Docker image
         run: |
-          docker build -t ${{ secrets.ECR_REGISTRY }}/fa-project:latest .
+          docker build -t ${{ secrets.ECR_REGISTRY }}:latest .
 
       # 5️⃣ Docker 이미지 ECR에 push
       - name: Push Docker image to ECR
         run: |
-          docker push ${{ secrets.ECR_REGISTRY }}/fa-project:latest
+          docker push ${{ secrets.ECR_REGISTRY }}:latest
