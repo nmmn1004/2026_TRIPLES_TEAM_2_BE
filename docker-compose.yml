@@ -1,5 +1,3 @@
-version: "3.9"
-
 services:
   mysql_db:
     image: mysql:8.0
@@ -44,6 +42,18 @@ services:
     networks:
       - spring_mysql_api
 
+  redis:
+    image: redis:6.2.14
+    container_name: deploy-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    command: redis-server --appendonly yes
+
 networks:
   spring_mysql_api:
     driver: bridge
+
+volumes:
+  redis-data:
