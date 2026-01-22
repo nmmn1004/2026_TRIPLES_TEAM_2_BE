@@ -5,13 +5,14 @@ import com.team2.fabackend.api.auth.dto.SignupRequest;
 import com.team2.fabackend.api.auth.dto.SignupResponse;
 import com.team2.fabackend.api.auth.dto.TokenPair;
 import com.team2.fabackend.domain.user.User;
+import com.team2.fabackend.global.enums.ErrorCode;
 import com.team2.fabackend.global.enums.SocialType;
+import com.team2.fabackend.global.exception.CustomException;
 import com.team2.fabackend.global.security.JwtProvider;
 import com.team2.fabackend.service.PhoneVerification.PhoneVerificationService;
 import com.team2.fabackend.service.user.UserReader;
 import com.team2.fabackend.service.user.UserWriter;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,15 +34,15 @@ public class AuthService {
     private final Duration REFRESH_TOKEN_TTL = Duration.ofDays(7);
 
     @Transactional
-    public SignupResponse signup(SignupRequest request) {
+    public void signup(SignupRequest request) {
         phoneVerificationService.checkVerified(request.getPhoneNumber());
 
         if (userReader.existsByUserId(request.getUserId())) {
-            throw new IllegalArgumentException("이미 가입된 이메일입니다.");
+            throw new CustomException(ErrorCode.DUPLICATE_USER_ID);
         }
 
         if (userReader.existsByPhoneNumber(request.getPhoneNumber())) {
-            throw new IllegalArgumentException("이미 가입된 전화번호입니다.");
+            throw new CustomException(ErrorCode.DUPLICATE_PHONE_NUMBER);
         }
 
         User user = User.builder()
@@ -58,7 +59,14 @@ public class AuthService {
 
         phoneVerificationService.clearVerificationLog(request.getPhoneNumber());
 
-        return new SignupResponse(user.getId());
+        new SignupResponse(user.getId());
+    }
+
+    @Transactional(readOnly = true)
+    public void checkUserIdDuplication(String userId) {
+        if (userReader.existsByUserId(userId)) {
+            throw new CustomException(ErrorCode.DUPLICATE_USER_ID);
+        }
     }
 
     @Transactional
@@ -66,7 +74,7 @@ public class AuthService {
         User user = userReader.findByUserIdAndSocialType(request.getUserId(), SocialType.LOCAL);
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-            throw new BadCredentialsException("비밀번호가 일치하지 않습니다");
+            throw new CustomException(ErrorCode.INVALID_PASSWORD);
         }
 
         String accessToken = jwtProvider.createAccessToken(user.getId(), user.getUserType());
@@ -80,14 +88,16 @@ public class AuthService {
     @Transactional
     public TokenPair refreshAccessToken(String refreshToken) {
         if (!jwtProvider.validateToken(refreshToken)) {
-            throw new IllegalArgumentException("유효하지 않은 리프레시 토큰");
+            throw new CustomException(ErrorCode.INVALID_REFRESH_TOKEN);
         }
 
         Long userId = jwtProvider.getUserIdFromToken(refreshToken);
 
-        if (!refreshTokenService.validateRefreshToken(userId, refreshToken)) {
+        try {
+            refreshTokenService.validateRefreshToken(userId, refreshToken);
+        } catch (CustomException e) {
             refreshTokenService.deleteRefreshToken(userId);
-            throw new IllegalArgumentException("토큰이 일치하지 않거나 이미 사용되었습니다.");
+            throw e;
         }
 
         User user = userReader.findById(userId);

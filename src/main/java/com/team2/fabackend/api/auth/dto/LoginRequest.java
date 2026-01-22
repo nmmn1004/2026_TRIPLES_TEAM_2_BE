@@ -1,7 +1,6 @@
 package com.team2.fabackend.api.auth.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -14,7 +13,7 @@ public class LoginRequest {
     @NotBlank
     private String userId;
 
-    @Schema(description = "비밀번호", example = "1234")
+    @Schema(description = "비밀번호", example = "12341234")
     @NotBlank
     private String password;
 }

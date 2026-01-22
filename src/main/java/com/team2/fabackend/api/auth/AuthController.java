@@ -13,18 +13,51 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.CacheControl;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.concurrent.TimeUnit;
+
 @RestController
 @RequestMapping("/auth")
 @RequiredArgsConstructor
-@Tag(name = "Auth", description = "인증 API")
+@Tag(name = "Auth", description = """
+    ## 인증 및 회원가입 API
+    
+    ### 💡 [중요] 실시간 중복 체크 (Debouncing) 가이드
+    아이디(`userId`) 입력 시 실시간 중복 체크를 구현할 때는 서버 부하를 줄이기 위해 반드시 **Debouncing**을 적용해야 합니다.
+    
+    #### 1. Debouncing 이란?
+    사용자가 입력을 멈춘 후 특정 시간(예: 300ms) 동안 추가 입력이 없을 때만 API를 호출하는 방식입니다.
+    
+    #### 2. Kotlin (Coroutine) 구현 예시
+    ```kotlin
+    // ViewModel 내부 예시
+    private var searchJob: Job? = null
+    
+    fun onUserIdChanged(newId: String) {
+        searchJob?.cancel() // 이전 대기 중인 요청 취소
+        searchJob = viewModelScope.launch {
+            delay(300L) // 300ms 대기
+            if (newId.length >= 4) { // 최소 글자수 제한 권장
+                checkUserIdDuplication(newId)
+            }
+        }
+    }
+    ```
+    
+    #### 3. 추천 정책
+    - **최소 호출 글자수:** 4자 이상부터 요청 권장
+    - **지연 시간:** 300ms ~ 500ms
+    - **에러 처리:** 중복 시 `409 Conflict (A001)` 에러 응답을 기반으로 UI 처리
+    """)
 public class AuthController {
     private final AuthService authService;
     private final PhoneVerificationService phoneVerificationService;
@@ -37,6 +70,15 @@ public class AuthController {
     public ResponseEntity<Void> signup(@RequestBody @Valid SignupRequest request) {
         authService.signup(request);
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/check-id")
+    public ResponseEntity<Void> checkId(@RequestParam String userId) {
+        authService.checkUserIdDuplication(userId);
+
+        return ResponseEntity.ok()
+                .cacheControl(CacheControl.maxAge(10, TimeUnit.SECONDS))
+                .build();
     }
 
     /**

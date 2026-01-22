@@ -19,7 +19,7 @@ import java.util.List;
 @Slf4j
 @RequiredArgsConstructor
 public class JwtFilter extends OncePerRequestFilter {
-    private final JwtProvider jwtProvider;
+    private final JwtProvider jwtProvider; // 기존 코드의 Provider 이름 확인
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
@@ -27,14 +27,19 @@ public class JwtFilter extends OncePerRequestFilter {
 
         String token = resolveToken(request);
 
-        if (token != null && jwtProvider.validateToken(token)) {
+        // 1. 토큰이 있고 유효하다면
+        if (StringUtils.hasText(token) && jwtProvider.validateToken(token)) {
+            // 2. 이미 만들어두신 getUserIdFromToken 메서드 활용
             Long userId = jwtProvider.getUserIdFromToken(token);
 
+            // 3. 별도의 Provider 메서드 없이 여기서 바로 Authentication 객체 생성
+            // Principal 자리에 Long 타입의 userId를 그대로 넣습니다.
             UsernamePasswordAuthenticationToken authentication =
-                    new UsernamePasswordAuthenticationToken(userId.toString(), null, List.of(new SimpleGrantedAuthority("ROLE_USER")));
+                    new UsernamePasswordAuthenticationToken(userId, null, List.of(new SimpleGrantedAuthority("ROLE_USER")));
 
             authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
+            // 4. 세션(SecurityContext)에 저장
             SecurityContextHolder.getContext().setAuthentication(authentication);
         }
 

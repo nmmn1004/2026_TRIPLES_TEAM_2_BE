@@ -1,6 +1,9 @@
 package com.team2.fabackend.service.PhoneVerification;
 
+import com.team2.fabackend.global.enums.ErrorCode;
+import com.team2.fabackend.global.exception.CustomException;
 import com.team2.fabackend.global.sms.NcpSmsClient;
+import com.team2.fabackend.service.user.UserReader;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -13,6 +16,8 @@ import java.util.Random;
 @Service
 @RequiredArgsConstructor
 public class PhoneVerificationService {
+    private final UserReader userReader;
+
     private final RedisTemplate<String, String> redisTemplate;
     private final NcpSmsClient ncpSmsClient;
 
@@ -28,6 +33,10 @@ public class PhoneVerificationService {
     }
 
     public void sendCode(String phoneNumber) {
+        if (userReader.existsByPhoneNumber(phoneNumber)) {
+            throw new CustomException(ErrorCode.DUPLICATE_PHONE_NUMBER);
+        }
+
         String code = String.format("%06d", new Random().nextInt(999999));
         redisTemplate.opsForValue().set(getVerifyCodeKey(phoneNumber), code, CODE_TTL);
 
@@ -35,6 +44,7 @@ public class PhoneVerificationService {
             ncpSmsClient.sendSms(phoneNumber, "[서비스명] 인증번호 [" + code + "]를 입력해주세요.");
         } catch (Exception e) {
             log.warn("SMS 발송 실패(Mock 처리): {} - {}", phoneNumber, code);
+            throw new CustomException(ErrorCode.SMS_SEND_FAILED);
         }
     }
 
@@ -47,10 +57,10 @@ public class PhoneVerificationService {
         String savedCode = redisTemplate.opsForValue().get(getVerifyCodeKey(phoneNumber));
 
         if (savedCode == null) {
-            throw new IllegalArgumentException("인증번호가 만료되었습니다.");
+            throw new CustomException(ErrorCode.EXPIRED_VERIFICATION_CODE);
         }
         if (!savedCode.equals(code)) {
-            throw new IllegalArgumentException("인증번호가 일치하지 않습니다.");
+            throw new CustomException(ErrorCode.INVALID_VERIFICATION_CODE);
         }
 
         redisTemplate.delete(getVerifyCodeKey(phoneNumber));
@@ -64,8 +74,8 @@ public class PhoneVerificationService {
 
     public void checkVerified(String phoneNumber) {
         String status = redisTemplate.opsForValue().get(getVerifiedStatusKey(phoneNumber));
-        if (status == null || !status.equals("VERIFIED")) {
-            throw new IllegalStateException("전화번호 인증이 완료되지 않았거나 시간이 초과되었습니다.");
+        if (!"VERIFIED".equals(status)) {
+            throw new CustomException(ErrorCode.PHONE_NOT_VERIFIED);
         }
     }
 

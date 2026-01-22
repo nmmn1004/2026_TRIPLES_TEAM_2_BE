@@ -27,9 +27,7 @@ public class User extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-//  Account info
-//    @Column(nullable = false, unique = true)
-//    private String email;
+    //  Account info
     @Column(nullable = false, unique = true)
     private String userId;
     @Column(nullable = false)
@@ -52,7 +50,6 @@ public class User extends BaseEntity {
 
     @Builder
     protected User(
-//          String email,
             String userId,
             String password,
             SocialType socialType,
@@ -63,7 +60,6 @@ public class User extends BaseEntity {
             String phoneNumber,
             UserType userType
     ) {
-//      this.email = email;
         this.userId = userId;
         this.password = password;
         this.socialType = socialType != null ? socialType : SocialType.LOCAL;
@@ -74,7 +70,35 @@ public class User extends BaseEntity {
         this.userType = userType != null ? userType : UserType.USER;
     }
 
-    public void changePassword(String encodedPassword) {
+    public void updatePassword(String encodedPassword) {
+        if (encodedPassword == null || encodedPassword.isBlank()) {
+            throw new IllegalArgumentException("새로운 비밀번호는 비어 있을 수 없습니다.");
+        }
 
+        this.password = encodedPassword;
+    }
+
+    public void updateName(String name) {
+        if (name == null || name.isBlank()) {
+            throw new IllegalArgumentException("새로운 이름은 비어 있을 수 없습니다.");
+        }
+
+        this.name = name;
+    }
+
+    public void updateNickName(String nickName) {
+        if (nickName == null || nickName.isBlank()) {
+            throw new IllegalArgumentException("새로운 별명은 비어 있을 수 없습니다.");
+        }
+
+        this.nickName = nickName;
+    }
+
+    public void updateBirth(LocalDate birth) {
+        if (birth == null) {
+            throw new IllegalArgumentException("생년월일은 비어 있을 수 없습니다.");
+        }
+
+        this.birth = birth;
     }
 }
