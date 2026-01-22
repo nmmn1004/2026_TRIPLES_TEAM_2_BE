@@ -1,6 +1,7 @@
 package com.team2.fabackend.service.auth;
 
 import com.team2.fabackend.api.auth.dto.LoginRequest;
+import com.team2.fabackend.api.auth.dto.PasswordResetRequest;
 import com.team2.fabackend.api.auth.dto.SignupRequest;
 import com.team2.fabackend.api.auth.dto.SignupResponse;
 import com.team2.fabackend.api.auth.dto.TokenPair;
@@ -40,7 +41,6 @@ public class AuthService {
         if (userReader.existsByUserId(request.getUserId())) {
             throw new CustomException(ErrorCode.DUPLICATE_USER_ID);
         }
-
         if (userReader.existsByPhoneNumber(request.getPhoneNumber())) {
             throw new CustomException(ErrorCode.DUPLICATE_PHONE_NUMBER);
         }
@@ -56,10 +56,7 @@ public class AuthService {
                 .build();
 
         userWriter.create(user);
-
         phoneVerificationService.clearVerificationLog(request.getPhoneNumber());
-
-        new SignupResponse(user.getId());
     }
 
     @Transactional(readOnly = true)
@@ -110,8 +107,33 @@ public class AuthService {
         return new TokenPair(newAccessToken, newRefreshToken);
     }
 
+    public String findUserId(String phoneNumber) {
+        phoneVerificationService.checkVerified(phoneNumber);
+
+        User user = userReader.findGeneralUserByPhone(phoneNumber); // 확실한 객체 반환
+
+        phoneVerificationService.clearVerificationLog(phoneNumber);
+        return maskUserId(user.getUserId());
+    }
+
+    @Transactional
+    public void resetPassword(PasswordResetRequest request) {
+        phoneVerificationService.checkVerified(request.getPhoneNumber());
+
+        User user = userReader.findGeneralUserByIdAndPhone(request.getUserId(), request.getPhoneNumber());
+
+        userWriter.updatePassword(user, passwordEncoder.encode(request.getNewPassword()));
+        phoneVerificationService.clearVerificationLog(request.getPhoneNumber());
+    }
+
     @Transactional
     public void logout(Long userId) {
         refreshTokenService.deleteRefreshToken(userId);
+    }
+
+    private String maskUserId(String userId) {
+        if (userId.length() <= 3) return userId.substring(0, 1) + "**";
+        // 뒤의 3글자만 별표
+        return userId.substring(0, userId.length() - 3) + "***";
     }
 }

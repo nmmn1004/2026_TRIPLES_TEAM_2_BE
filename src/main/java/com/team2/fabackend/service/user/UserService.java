@@ -8,6 +8,8 @@ import com.team2.fabackend.global.exception.CustomException;
 import com.team2.fabackend.service.auth.AuthVerificationService;
 import com.team2.fabackend.service.auth.RefreshTokenService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,6 +32,13 @@ public class UserService {
         User user = userReader.findById(id);
 
         return UserInfoResponse.from(user);
+    }
+
+    @Transactional
+    public Page<UserInfoResponse> getAllUsers(Pageable pageable) {
+        Page<User> usersPage = userReader.findAllUsers(pageable);
+
+        return usersPage.map(UserInfoResponse::from);
     }
 
     @Transactional(readOnly = true)

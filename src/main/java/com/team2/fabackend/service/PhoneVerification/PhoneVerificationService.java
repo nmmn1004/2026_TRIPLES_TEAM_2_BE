@@ -32,23 +32,22 @@ public class PhoneVerificationService {
         return "phone_verified_status:" + phoneNumber;
     }
 
-    public void sendCode(String phoneNumber) {
+    public void sendCodeForSignUp(String phoneNumber) {
         if (userReader.existsByPhoneNumber(phoneNumber)) {
             throw new CustomException(ErrorCode.DUPLICATE_PHONE_NUMBER);
         }
+        sendSmsProcess(phoneNumber);
+    }
 
-        String code = String.format("%06d", new Random().nextInt(999999));
-        redisTemplate.opsForValue().set(getVerifyCodeKey(phoneNumber), code, CODE_TTL);
-
-        try {
-            ncpSmsClient.sendSms(phoneNumber, "[서비스명] 인증번호 [" + code + "]를 입력해주세요.");
-        } catch (Exception e) {
-            log.warn("SMS 발송 실패(Mock 처리): {} - {}", phoneNumber, code);
-            throw new CustomException(ErrorCode.SMS_SEND_FAILED);
+    public void sendCodeForFinding(String phoneNumber) {
+        if (!userReader.existsByPhoneNumber(phoneNumber)) {
+            throw new CustomException(ErrorCode.USER_NOT_FOUND);
         }
+        sendSmsProcess(phoneNumber);
     }
 
     public void verifyCode(String phoneNumber, String code) {
+        // 테스트용 마스터 코드
         if ("000000".equals(code)) {
             markAsVerified(phoneNumber);
             return;
@@ -56,14 +55,9 @@ public class PhoneVerificationService {
 
         String savedCode = redisTemplate.opsForValue().get(getVerifyCodeKey(phoneNumber));
 
-        if (savedCode == null) {
-            throw new CustomException(ErrorCode.EXPIRED_VERIFICATION_CODE);
-        }
-        if (!savedCode.equals(code)) {
-            throw new CustomException(ErrorCode.INVALID_VERIFICATION_CODE);
-        }
+        if (savedCode == null) throw new CustomException(ErrorCode.EXPIRED_VERIFICATION_CODE);
+        if (!savedCode.equals(code)) throw new CustomException(ErrorCode.INVALID_VERIFICATION_CODE);
 
-        redisTemplate.delete(getVerifyCodeKey(phoneNumber));
         markAsVerified(phoneNumber);
     }
 
@@ -81,5 +75,19 @@ public class PhoneVerificationService {
 
     public void clearVerificationLog(String phoneNumber) {
         redisTemplate.delete(getVerifiedStatusKey(phoneNumber));
+    }
+
+    private void sendSmsProcess(String phoneNumber) {
+        String code = String.format("%06d", new Random().nextInt(1000000));
+
+        redisTemplate.opsForValue().set(getVerifyCodeKey(phoneNumber), code, CODE_TTL);
+
+        try {
+            ncpSmsClient.sendSms(phoneNumber, "[서비스명] 인증번호 [" + code + "]를 입력해주세요.");
+            log.info("인증번호 발송: {} - {}", phoneNumber, code);
+        } catch (Exception e) {
+            log.error("SMS 발송 실패: {}", e.getMessage());
+            throw new CustomException(ErrorCode.SMS_SEND_FAILED);
+        }
     }
 }

@@ -7,15 +7,22 @@ import com.team2.fabackend.service.user.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -76,12 +83,48 @@ public class UserController {
      */
 //    @PreAuthorize("hasAnyRole('USER','ADMIN')")
     @GetMapping("/me")
-    @Operation(summary = "회원 정보 조회", description = "AccessToken으로 사용자 조회")
+    @Operation(summary = "자신 회원 정보 조회", description = "AccessToken으로 사용자 조회")
     public ResponseEntity<UserInfoResponse> getCurrentUser(
             @AuthenticationPrincipal Long userId
     ) {
         UserInfoResponse response = userService.getUser(userId);
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/{userId}")
+    @Operation(
+            summary = "타인 회원 정보 조회",
+            description = "로그인한 유저는 특정 사용자의 공개 프로필 정보를 조회할 수 있습니다."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "조회 성공"),
+            @ApiResponse(responseCode = "401", description = "인증 실패 (AccessToken 누락/만료)"),
+            @ApiResponse(description = "유저를 찾을 수 없음", responseCode = "404")
+    })
+    public ResponseEntity<UserInfoResponse> getUser(
+            @PathVariable Long userId
+    ) {
+        UserInfoResponse response = userService.getUser(userId);
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping
+    @Operation(
+            summary = "전체 유저 페이징 조회",
+            description = "## AOS/Retrofit 요청 가이드\n" +
+                    "- **기본 파라미터**: `page`(0부터 시작), `size`(페이지당 개수), `sort`(필드,방향)\n" +
+                    "- **요청 예시**: `baseUrl/users?page=0&size=10&sort=id,desc`\n\n" +
+                    "### 응답 구조 안내\n" +
+                    "- `content`: 유저 데이터 리스트 (`List<UserInfoResponse>`)\n" +
+                    "- `last`: 마지막 페이지 여부 (무한 스크롤 구현 시 사용)\n" +
+                    "- `totalElements`: 전체 유저 수\n" +
+                    "- `number`: 현재 페이지 번호"
+    )
+    public ResponseEntity<Page<UserInfoResponse>> getAllUsers(
+            @PageableDefault(size = 10, sort = "id", direction = Sort.Direction.DESC) Pageable pageable
+    ) {
+
+        return ResponseEntity.ok(userService.getAllUsers(pageable));
     }
 
     /**
@@ -116,7 +159,8 @@ public class UserController {
     )
     public ResponseEntity<Void> updateProfile(
             @AuthenticationPrincipal Long userId,
-            @RequestHeader("X-Password-Confirm_Token") String passwordConfirmToken,
+            @Parameter(description = "비밀번호 확인 후 발급받은 인증 토큰 (유효시간 10분)")
+            @RequestHeader("X-Password-Confirm-Token") String passwordConfirmToken,
             @Valid @RequestBody UserInfoRequest request
     ) {
         userService.updateProfile(userId, passwordConfirmToken, request);
