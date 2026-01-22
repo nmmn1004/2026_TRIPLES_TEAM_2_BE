@@ -1,4 +1,18 @@
 services:
+  npm:
+    image: 'jc21/nginx-proxy-manager:latest'
+    container_name: nginx-proxy-manager
+    restart: always
+    ports:
+      - '80:80'
+      - '81:81'
+      - '443:443'
+    volumes:
+      - ./npm/data:/data
+      - ./npm/letsencrypt:/etc/letsencrypt
+    networks:
+      - spring_mysql_api
+
   mysql_db:
     image: mysql:8.0
     container_name: deploy-db
@@ -69,6 +83,8 @@ services:
         max-file: "3"
     networks:
       - spring_mysql_api
+
+
 
 networks:
   spring_mysql_api:
