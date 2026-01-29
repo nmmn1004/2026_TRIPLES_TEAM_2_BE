@@ -1,6 +1,18 @@
-version: "3.9"
-
 services:
+  npm:
+    image: 'jc21/nginx-proxy-manager:latest'
+    container_name: nginx-proxy-manager
+    restart: always
+    ports:
+      - '80:80'
+      - '81:81'
+      - '443:443'
+    volumes:
+      - ./npm/data:/data
+      - ./npm/letsencrypt:/etc/letsencrypt
+    networks:
+      - spring_mysql_api
+
   mysql_db:
     image: mysql:8.0
     container_name: deploy-db
@@ -19,6 +31,13 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    volumes:
+      - mysql-data:/var/lib/mysql
     networks:
       - spring_mysql_api
 
@@ -26,7 +45,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    image: ${ECR_REGISTRY}/fabackend:latest
+    image: ${ECR_REGISTRY}fabackend:latest
     container_name: spring_app
     env_file:
       - .env
@@ -41,9 +60,36 @@ services:
       mysql_db:
         condition: service_healthy
     restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
     networks:
       - spring_mysql_api
+
+  redis:
+    image: redis:6.2-alpine
+    container_name: deploy-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    command: redis-server --appendonly yes
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    networks:
+      - spring_mysql_api
+
+
 
 networks:
   spring_mysql_api:
     driver: bridge
+
+volumes:
+  redis-data:
+  mysql-data:

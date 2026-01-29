@@ -2,9 +2,12 @@ package com.team2.fabackend.service.user;
 
 import com.team2.fabackend.domain.user.User;
 import com.team2.fabackend.domain.user.UserRepository;
+import com.team2.fabackend.global.enums.ErrorCode;
 import com.team2.fabackend.global.enums.SocialType;
+import com.team2.fabackend.global.exception.CustomException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,23 +17,35 @@ import org.springframework.transaction.annotation.Transactional;
 public class UserReader {
     private final UserRepository userRepository;
 
-    public User findByEmailAndSocialType(String email, SocialType socialType) {
-        return userRepository.findByEmailAndSocialType(email, socialType)
-                .orElseThrow(() ->
-                        new UsernameNotFoundException("존재하지 않는 사용자")
-                );
+    public User findById(Long userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
     }
 
-    public boolean existsByEmail(String email) {
-        return userRepository.existsByEmailAndSocialType(email, SocialType.LOCAL);
+    public Page<User> findAllUsers(Pageable pageable) {
+        return userRepository.findAll(pageable);
+    }
+
+    public User findByUserIdAndSocialType(String userId, SocialType socialType) {
+        return userRepository.findByUserIdAndSocialType(userId, socialType)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+    }
+
+    public User findGeneralUserByPhone(String phoneNumber) {
+        return userRepository.findByPhoneNumberAndSocialType(phoneNumber, SocialType.LOCAL)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+    }
+
+    public User findGeneralUserByIdAndPhone(String userId, String phoneNumber) {
+        return userRepository.findByUserIdAndPhoneNumberAndSocialType(userId, phoneNumber, SocialType.LOCAL)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+    }
+
+    public boolean existsByUserId(String userId) {
+        return userRepository.existsByUserIdAndSocialType(userId, SocialType.LOCAL);
     }
 
     public boolean existsByPhoneNumber(String phoneNumber) {
         return userRepository.existsByPhoneNumber(phoneNumber);
-    }
-
-    public User findById(Long userId) {
-        return userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
     }
 }

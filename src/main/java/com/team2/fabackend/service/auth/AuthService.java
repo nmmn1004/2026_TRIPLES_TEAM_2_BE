@@ -1,20 +1,24 @@
 package com.team2.fabackend.service.auth;
 
 import com.team2.fabackend.api.auth.dto.LoginRequest;
+import com.team2.fabackend.api.auth.dto.PasswordResetRequest;
 import com.team2.fabackend.api.auth.dto.SignupRequest;
 import com.team2.fabackend.api.auth.dto.SignupResponse;
 import com.team2.fabackend.api.auth.dto.TokenPair;
 import com.team2.fabackend.domain.user.User;
+import com.team2.fabackend.global.enums.ErrorCode;
 import com.team2.fabackend.global.enums.SocialType;
+import com.team2.fabackend.global.exception.CustomException;
 import com.team2.fabackend.global.security.JwtProvider;
 import com.team2.fabackend.service.PhoneVerification.PhoneVerificationService;
 import com.team2.fabackend.service.user.UserReader;
 import com.team2.fabackend.service.user.UserWriter;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.time.Duration;
 
 @Service
 @RequiredArgsConstructor
@@ -26,58 +30,110 @@ public class AuthService {
 
     private final PasswordEncoder passwordEncoder;
     private final JwtProvider jwtProvider;
+    private final RefreshTokenService refreshTokenService;
+
+    private final Duration REFRESH_TOKEN_TTL = Duration.ofDays(7);
 
     @Transactional
-    public SignupResponse signup(SignupRequest request) {
+    public void signup(SignupRequest request) {
         phoneVerificationService.checkVerified(request.getPhoneNumber());
 
-        if (userReader.existsByEmail(request.getEmail())) {
-            throw new IllegalArgumentException("이미 가입된 이메일입니다.");
+        if (userReader.existsByUserId(request.getUserId())) {
+            throw new CustomException(ErrorCode.DUPLICATE_USER_ID);
         }
-
         if (userReader.existsByPhoneNumber(request.getPhoneNumber())) {
-            throw new IllegalArgumentException("이미 가입된 전화번호입니다.");
+            throw new CustomException(ErrorCode.DUPLICATE_PHONE_NUMBER);
         }
 
         User user = User.builder()
-                .email(request.getEmail())
+                .userId(request.getUserId())
                 .password(passwordEncoder.encode(request.getPassword()))
                 .socialType(SocialType.LOCAL)
                 .name(request.getName())
                 .nickName(request.getNickName())
-                .birthYear(request.getBirthYear())
+                .birth(request.getBirth())
                 .phoneNumber(request.getPhoneNumber())
                 .build();
 
         userWriter.create(user);
-
-        return new SignupResponse(user.getId());
+        phoneVerificationService.clearVerificationLog(request.getPhoneNumber());
     }
 
+    @Transactional(readOnly = true)
+    public void checkUserIdDuplication(String userId) {
+        if (userReader.existsByUserId(userId)) {
+            throw new CustomException(ErrorCode.DUPLICATE_USER_ID);
+        }
+    }
+
+    @Transactional
     public TokenPair login(LoginRequest request) {
-        User user = userReader.findByEmailAndSocialType(request.getEmail(), SocialType.LOCAL);
+        User user = userReader.findByUserIdAndSocialType(request.getUserId(), SocialType.LOCAL);
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-            throw new BadCredentialsException("비밀번호가 일치하지 않습니다");
+            throw new CustomException(ErrorCode.INVALID_PASSWORD);
         }
 
         String accessToken = jwtProvider.createAccessToken(user.getId(), user.getUserType());
         String refreshToken = jwtProvider.createRefreshToken(user.getId());
 
-        return new TokenPair(accessToken, refreshToken); // Access Token은 Header, Refresh Token은 Body에서 처리
+        refreshTokenService.saveRefreshToken(user.getId(), refreshToken, REFRESH_TOKEN_TTL);
+
+        return new TokenPair(accessToken, refreshToken);
     }
 
     @Transactional
-    public String refreshAccessToken(String refreshToken) {
-
+    public TokenPair refreshAccessToken(String refreshToken) {
         if (!jwtProvider.validateToken(refreshToken)) {
-            throw new IllegalArgumentException("유효하지 않은 리프레시 토큰");
+            throw new CustomException(ErrorCode.INVALID_REFRESH_TOKEN);
         }
 
         Long userId = jwtProvider.getUserIdFromToken(refreshToken);
 
+        try {
+            refreshTokenService.validateRefreshToken(userId, refreshToken);
+        } catch (CustomException e) {
+            refreshTokenService.deleteRefreshToken(userId);
+            throw e;
+        }
+
         User user = userReader.findById(userId);
 
-        return jwtProvider.createAccessToken(user.getId(), user.getUserType());
+        String newAccessToken = jwtProvider.createAccessToken(user.getId(), user.getUserType());
+        String newRefreshToken = jwtProvider.createRefreshToken(user.getId());
+
+        refreshTokenService.saveRefreshToken(user.getId(), newRefreshToken, REFRESH_TOKEN_TTL);
+
+        return new TokenPair(newAccessToken, newRefreshToken);
+    }
+
+    public String findUserId(String phoneNumber) {
+        phoneVerificationService.checkVerified(phoneNumber);
+
+        User user = userReader.findGeneralUserByPhone(phoneNumber); // 확실한 객체 반환
+
+        phoneVerificationService.clearVerificationLog(phoneNumber);
+        return maskUserId(user.getUserId());
+    }
+
+    @Transactional
+    public void resetPassword(PasswordResetRequest request) {
+        phoneVerificationService.checkVerified(request.getPhoneNumber());
+
+        User user = userReader.findGeneralUserByIdAndPhone(request.getUserId(), request.getPhoneNumber());
+
+        userWriter.updatePassword(user, passwordEncoder.encode(request.getNewPassword()));
+        phoneVerificationService.clearVerificationLog(request.getPhoneNumber());
+    }
+
+    @Transactional
+    public void logout(Long userId) {
+        refreshTokenService.deleteRefreshToken(userId);
+    }
+
+    private String maskUserId(String userId) {
+        if (userId.length() <= 3) return userId.substring(0, 1) + "**";
+        // 뒤의 3글자만 별표
+        return userId.substring(0, userId.length() - 3) + "***";
     }
 }

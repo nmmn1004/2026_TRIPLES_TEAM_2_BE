@@ -10,15 +10,24 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class SwaggerConfig {
-
     @Bean
     public OpenAPI openAPI() {
         String jwtSchemeName = "JWT";
+        String confirmTokenSchemeName = "Confirm Token";
 
         SecurityScheme securityScheme = new SecurityScheme()
                 .type(SecurityScheme.Type.HTTP)
                 .scheme("bearer")
                 .bearerFormat("JWT");
+
+        SecurityScheme confirmTokenScheme = new SecurityScheme()
+                .type(SecurityScheme.Type.APIKEY)
+                .in(SecurityScheme.In.HEADER)
+                .name("X-Password-Confirm-Token");
+
+        SecurityRequirement securityRequirement = new SecurityRequirement()
+                .addList(jwtSchemeName)
+                .addList(confirmTokenSchemeName);
 
         return new OpenAPI()
                 .info(new Info()
@@ -36,9 +45,10 @@ public class SwaggerConfig {
                                 """)
                         .version("v1.0.0")
                 )
-                .addSecurityItem(new SecurityRequirement().addList(jwtSchemeName))
+                .addSecurityItem(securityRequirement)
                 .components(new Components()
                         .addSecuritySchemes(jwtSchemeName, securityScheme)
+                        .addSecuritySchemes(confirmTokenSchemeName, confirmTokenScheme)
                 );
     }
 }
