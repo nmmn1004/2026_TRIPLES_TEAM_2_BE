@@ -1,4 +1,4 @@
-package com.team2.fabackend.service.PhoneVerification;
+package com.team2.fabackend.service.phoneVerification;
 
 import com.team2.fabackend.global.enums.ErrorCode;
 import com.team2.fabackend.global.exception.CustomException;

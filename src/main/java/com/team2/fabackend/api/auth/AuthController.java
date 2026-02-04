@@ -8,7 +8,7 @@ import com.team2.fabackend.api.auth.dto.SignupRequest;
 import com.team2.fabackend.api.auth.dto.TokenPair;
 import com.team2.fabackend.api.phone.dto.PhoneSendRequest;
 import com.team2.fabackend.api.phone.dto.PhoneVerifyRequest;
-import com.team2.fabackend.service.PhoneVerification.PhoneVerificationService;
+import com.team2.fabackend.service.phoneVerification.PhoneVerificationService;
 import com.team2.fabackend.service.auth.AuthService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;

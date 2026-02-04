@@ -31,7 +31,6 @@ public class SignupRequest {
     @Schema(description = "실명", example = "테스형")
     private String name;
 
-    @NotBlank
     @Schema(description = "닉네임", example = "무말랭이")
     private String nickName;
 
