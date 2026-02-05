@@ -2,6 +2,7 @@ package com.team2.fabackend.api.user.dto;
 
 import com.team2.fabackend.domain.user.User;
 import com.team2.fabackend.global.enums.SocialType;
+import com.team2.fabackend.global.enums.UserType;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -38,6 +39,9 @@ public class UserInfoResponse {
     @Schema(description = "유저 생년월일")
     private LocalDate birth;
 
+    @Schema(description = "유저 역할")
+    private UserType userType;
+
     public static UserInfoResponse from(User user) {
         return UserInfoResponse.builder()
                 .id(user.getId())
@@ -47,6 +51,7 @@ public class UserInfoResponse {
                 .name(user.getName())
                 .nickName(user.getNickName())
                 .birth(user.getBirth())
+                .userType(user.getUserType())
                 .build();
     }
 }
