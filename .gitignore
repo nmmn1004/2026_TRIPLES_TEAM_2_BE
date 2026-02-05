@@ -1,0 +1,36 @@
+# ===== Java / Gradle =====
+build/
+out/
+.gradle/
+!gradle/wrapper/gradle-wrapper.jar
+
+# ===== IDE =====
+.idea/
+.vscode/
+*.iml
+
+# ===== OS =====
+.DS_Store
+Thumbs.db
+
+# ===== Environment =====
+.env
+.env.*
+*.env
+
+# ===== Logs =====
+*.log
+logs/
+
+# ===== Database =====
+backup.sql
+*.sql
+
+# ===== Docker =====
+docker-data/
+
+# 🔐 Nginx Proxy Manager / Secrets
+npm/data/
+npm/letsencrypt/
+npm/data/keys.json
+npm/data/database.sqlite

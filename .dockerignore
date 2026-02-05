@@ -1,0 +1,46 @@
+# ===== Build Output (Host) =====
+# 호스트에서 빌드된 결과물이 컨테이너 내부 빌드와 충돌 방지
+build/
+out/
+bin/
+
+# ===== Gradle & Build Tools =====
+.gradle/
+# Wrapper는 컨테이너 내부 빌드를 위해 포함(복사)하므로 여기서는 제외하지 않음
+# 만약 컨테이너 빌드 속도를 위해 로컬 캐시를 막으려면 추가
+
+# ===== Git & IDE =====
+.git/
+.gitignore
+.idea/
+.vscode/
+*.iml
+
+# ===== Docker Configuration =====
+# 이미지 내부에 도커 설정 파일이 포함될 필요 없음 (보안)
+Dockerfile
+docker-compose.yml
+docker-compose.*.yml
+.dockerignore
+
+# ===== Environment & Secrets =====
+# 민감한 정보 유출 방지 (가장 중요)
+.env
+.env.*
+*.env
+
+# ===== OS & Logs =====
+.DS_Store
+Thumbs.db
+*.log
+logs/
+
+# ===== Database Dumps =====
+*.sql
+backup.sql
+docker-data/
+
+# ===== Docs & Others =====
+README.md
+HELP.md
+node_modules/
