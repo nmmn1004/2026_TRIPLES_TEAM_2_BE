@@ -19,7 +19,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
-@Slf4j
 @RestController
 @RequestMapping("/terms")
 @RequiredArgsConstructor
@@ -102,7 +101,6 @@ import java.util.List;
         """
 )
 public class TermController {
-
     private final UserTermService userTermService;
 
     /**
