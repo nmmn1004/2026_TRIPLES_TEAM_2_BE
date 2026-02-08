@@ -17,6 +17,7 @@ public class SwaggerConfig {
     public OpenAPI openAPI() {
         String jwtSchemeName = "JWT";
         String confirmTokenSchemeName = "Confirm Token";
+        String serverUrl = "https://dontory.duckdns.org";
 
         SecurityScheme securityScheme = new SecurityScheme()
                 .type(SecurityScheme.Type.HTTP)
@@ -52,6 +53,7 @@ public class SwaggerConfig {
                 .servers(List.of(
                         new Server().url("https://dontory.duckdns.org")
                 ))
+                .addServersItem(new Server().url(serverUrl))
                 .addSecurityItem(securityRequirement)
                 .components(new Components()
                         .addSecuritySchemes(jwtSchemeName, securityScheme)
