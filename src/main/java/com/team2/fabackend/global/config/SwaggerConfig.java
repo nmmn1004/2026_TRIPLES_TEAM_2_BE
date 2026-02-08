@@ -49,11 +49,10 @@ public class SwaggerConfig {
                                 """)
                         .version("v1.0.0")
                 )
-
                 .servers(List.of(
-                        new Server().url("https://dontory.duckdns.org")
+                        new Server().url("https://dontory.duckdns.org").description("운영 서버"),
+                        new Server().url("http://localhost:8080").description("로컬 테스트")
                 ))
-                .addServersItem(new Server().url(serverUrl))
                 .addSecurityItem(securityRequirement)
                 .components(new Components()
                         .addSecuritySchemes(jwtSchemeName, securityScheme)
