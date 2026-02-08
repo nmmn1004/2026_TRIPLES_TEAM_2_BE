@@ -27,7 +27,7 @@ jobs:
 
             # 3️⃣ 기존 컨테이너 삭제 후 새로 실행
             docker compose down
-            docker compose up -d
+            docker compose --profile proxy up -d
 
             # 4️⃣ 상태 확인
             docker compose ps
