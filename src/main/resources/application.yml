@@ -7,6 +7,10 @@ spring:
     redis:
       host: localhost
       port: 6379
+
+server:
+  forward-headers-strategy: framework
+
 jwt:
   secret: ${JWT_SECRET}
   access-token-validity-in-milliseconds: ${ACCESS_TOKEN_VALIDITY_IN_MILLISECONDS}
