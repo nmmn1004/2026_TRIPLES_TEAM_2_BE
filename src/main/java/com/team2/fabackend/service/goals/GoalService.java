@@ -34,10 +34,12 @@ public class GoalService {
         Goal goal = Goal.builder()
                 .user(user)
                 .title(request.getTitle())
+                .category(request.getCategory())
                 .targetAmount(request.getTargetAmount())
                 .startDate(request.getStartDate())
                 .endDate(request.getEndDate())
                 .memo(request.getMemo())
+                .currentAmount(0L)
                 .build();
 
         goal.calculateDailyAllowance();
@@ -47,10 +49,8 @@ public class GoalService {
     // R : 목표 조회
     public List<GoalResponse> findAllGoals() {
         return goalRepository.findAll().stream().map(goal -> {
-            // 현재까지 지출 누적 금액
-            Long totalSpent = sumSpentAmount(goal.getUser().getId(), goal.getStartDate(), LocalDate.now());
+            Long totalSpent = goal.getCurrentAmount();
 
-            // 권장 누적 지출 및 지연/단축일 계산 로직
             Double E = goal.getDailyAllowance();
             long passedDays = java.time.temporal.ChronoUnit.DAYS.between(goal.getStartDate(), LocalDate.now());
             double cumulativeAllowance = E * Math.max(0, passedDays);
@@ -58,7 +58,6 @@ public class GoalService {
             double diff = totalSpent - cumulativeAllowance;
             long changedDays = Math.round(Math.abs(diff / E));
 
-            // 성공률 산식 적용: (전체기간 - 지연기간) / 전체기간 * 100
             long totalPeriod = java.time.temporal.ChronoUnit.DAYS.between(goal.getStartDate(), goal.getEndDate());
             if (totalPeriod <= 0) totalPeriod = 1;
 
@@ -83,15 +82,15 @@ public class GoalService {
         }).collect(Collectors.toList());
     }
 
-    // U
+    // U : 목표 수정
     @Transactional
     public void updateGoal(Long id, GoalRequest request) {
         Goal goal = goalRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("목표가 없습니다. id=" + id));
-        goal.update(request.getTitle(), request.getTargetAmount(), request.getStartDate(), request.getEndDate(), request.getMemo());
+        goal.update(request.getTitle(), request.getTargetAmount(), request.getStartDate(), request.getEndDate(), request.getMemo(), request.getCategory());
     }
 
-    // D
+    // D : 목표 삭제
     @Transactional
     public void deleteGoal(Long id) {
         goalRepository.deleteById(id);
@@ -102,8 +101,7 @@ public class GoalService {
         Goal goal = goalRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("목표를 찾을 수 없습니다. id=" + id));
 
-        Long userId = goal.getUser().getId();
-        Long totalSpent = sumSpentAmount(userId, goal.getStartDate(), LocalDate.now().plusDays(1));
+        Long totalSpent = goal.getCurrentAmount();
 
         Double E = goal.getDailyAllowance();
         long passedDays = java.time.temporal.ChronoUnit.DAYS.between(goal.getStartDate(), LocalDate.now().plusDays(1));
@@ -111,7 +109,6 @@ public class GoalService {
         double diff = totalSpent - (E * passedDays);
         long changedDays = Math.round(Math.abs(diff / E));
 
-        // 성공률 계산 로직 동일하게 적용
         long totalPeriod = java.time.temporal.ChronoUnit.DAYS.between(goal.getStartDate(), goal.getEndDate());
         if (totalPeriod <= 0) totalPeriod = 1;
         long delayedDaysForRate = (diff > 0) ? changedDays : 0;
@@ -132,14 +129,9 @@ public class GoalService {
                 .goalId(goal.getId())
                 .changedDays(changedDays)
                 .type(type)
-                .successRate(successRate) // 상세 분석 페이지용 성공률
+                .successRate(successRate)
                 .analysisMessage(message)
                 .build();
-    }
-
-    private Long sumSpentAmount(Long userId, LocalDate start, LocalDate end) {
-        Long total = ledgerRepository.sumExpenseAmountBetween(userId, start, end);
-        return total != null ? total : 0L;
     }
 
     private String determineStatus(Long spent, double allowance) {

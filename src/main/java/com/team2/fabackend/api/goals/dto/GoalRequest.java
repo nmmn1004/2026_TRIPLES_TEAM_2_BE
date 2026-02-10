@@ -9,6 +9,7 @@ import java.time.LocalDate;
 @NoArgsConstructor
 public class GoalRequest {
     private String title;
+    private String category;
     private Long targetAmount;
     private LocalDate startDate;
     private LocalDate endDate;

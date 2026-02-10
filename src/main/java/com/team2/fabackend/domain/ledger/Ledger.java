@@ -42,6 +42,5 @@ public class Ledger {
         this.type = type;
         this.date = date;
         this.time = time;
-        this.goalId = goalId;
     }
 }

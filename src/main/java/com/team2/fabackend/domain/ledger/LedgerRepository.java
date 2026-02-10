@@ -9,6 +9,14 @@ import java.time.LocalDate;
 import java.util.List;
 
 public interface LedgerRepository extends JpaRepository<Ledger, Long> {
+    //유저의 특정 기간 내 모든 지출내역 조회
+    @Query("SELECT l FROM Ledger l " +
+            "WHERE l.userId = :userId " +
+            "AND l.date BETWEEN :start AND :end " +
+            "AND l.type = 'EXPENSE'")
+    List<Ledger> findAllExpensesByUserIdBetween(@Param("userId") Long userId,
+                                                @Param("start") LocalDate start,
+                                                @Param("end") LocalDate end);
     // 기간 내 지출 합계 계산 (분석 로직의 핵심)
     @Query("SELECT SUM(l.amount) FROM Ledger l " +
             "WHERE l.userId = :userId " +

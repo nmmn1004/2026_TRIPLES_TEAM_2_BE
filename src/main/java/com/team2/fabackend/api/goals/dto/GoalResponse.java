@@ -10,6 +10,7 @@ import java.util.List;
 public class GoalResponse {
     private Long id;
     private String title;
+    private String category;
     private Long targetAmount; //목표 금액
     private Long currentSpend; //누적 지출액
     private String status;

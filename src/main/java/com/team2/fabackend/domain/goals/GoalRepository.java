@@ -11,6 +11,7 @@ import java.util.List;
 
 @Repository
 public interface GoalRepository extends JpaRepository<Goal, Long> {
+    List<Goal> findAllByUserId(Long userId);
     //목표 기간 내 카테고리별 지출 합계 구하는 쿼리
     @Query("SELECT new com.team2.fabackend.api.goals.dto.CategoryStatResponse(l.category, SUM(l.amount)) " +
             "FROM Ledger l " +
