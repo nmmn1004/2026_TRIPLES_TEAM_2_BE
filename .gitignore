@@ -1,36 +1,73 @@
-# ===== Java / Gradle =====
+#######################################
+# 🟢 Build / Package (Java, Gradle)
+#######################################
 build/
 out/
 .gradle/
+
+# Keep Gradle Wrapper JAR
 !gradle/wrapper/gradle-wrapper.jar
 
-# ===== IDE =====
+
+#######################################
+# 🟢 IDE / Editor
+#######################################
 .idea/
 .vscode/
 *.iml
 
-# ===== OS =====
+
+#######################################
+# 🟢 Operating System
+#######################################
 .DS_Store
 Thumbs.db
 
-# ===== Environment =====
+
+#######################################
+# 🟢 Environment / Secrets
+#######################################
 .env
 .env.*
 *.env
 
-# ===== Logs =====
+
+#######################################
+# 🟢 Logs
+#######################################
 *.log
 logs/
 
-# ===== Database =====
+
+#######################################
+# 🟢 Database / Backup Files
+#######################################
 backup.sql
 *.sql
 
-# ===== Docker =====
+
+#######################################
+# 🟢 Docker / Runtime Data
+#######################################
 docker-data/
 
-# 🔐 Nginx Proxy Manager / Secrets
+
+#######################################
+# 🟢 Nginx Proxy Manager / TLS / Secrets
+#######################################
 npm/data/
 npm/letsencrypt/
 npm/data/keys.json
 npm/data/database.sqlite
+
+
+#######################################
+# 🟢 AI Prompt Files (Private)
+#######################################
+src/main/resources/prompts/
+
+
+#######################################
+# 🟢 AI Prompt Examples (Optional: Track or Ignore)
+#######################################
+# src/main/resources/prompts-example/
