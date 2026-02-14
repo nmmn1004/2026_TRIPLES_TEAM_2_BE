@@ -15,47 +15,61 @@ java {
 
 repositories {
     mavenCentral()
+    maven { url 'https://repo.spring.io/milestone' }
 }
 
 dependencies {
-    // Web / Validation
+
+    // ---------------------------
+    // Spring Boot Core
+    // ---------------------------
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
-
-    // JPA
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-
-    // Security
     implementation 'org.springframework.boot:spring-boot-starter-security'
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 
-    // Swagger (Spring 6.2 대응)
+    // ---------------------------
+    // Swagger
+    // ---------------------------
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.9'
 
-    // JWT (안정 + 유지중)
+    // ---------------------------
+    // JWT
+    // ---------------------------
     implementation 'io.jsonwebtoken:jjwt-api:0.12.5'
     runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.5'
     runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.5'
 
-
-    // DB
+    // ---------------------------
+    // Database
+    // ---------------------------
     runtimeOnly 'com.mysql:mysql-connector-j'
 
+    // ---------------------------
+    // Gemini (Spring AI)
+    // ---------------------------
+    implementation platform("org.springframework.ai:spring-ai-bom:1.0.0-M1")
+    implementation 'org.springframework.ai:spring-ai-openai-spring-boot-starter'
+
+    // ---------------------------
+    // Utilities
+    // ---------------------------
+    implementation 'io.github.cdimascio:java-dotenv:5.1.1'
+
+    // ---------------------------
     // Lombok
+    // ---------------------------
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
 
-    // Dev
+    // ---------------------------
+    // Dev / Test
+    // ---------------------------
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
 
-    // Test
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.security:spring-security-test'
-
-    // dotenv
-    implementation 'io.github.cdimascio:java-dotenv:5.1.1'
-
-    // redis
-    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 }
 
 tasks.named('test') {
