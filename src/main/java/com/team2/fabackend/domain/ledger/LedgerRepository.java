@@ -26,6 +26,17 @@ public interface LedgerRepository extends JpaRepository<Ledger, Long> {
                                  @Param("start") LocalDate start,
                                  @Param("end") LocalDate end);
 
+    @Query("SELECT AVG(l.amount) FROM Ledger l JOIN User u ON l.userId = u.id " +
+            "WHERE u.birth BETWEEN :startDate AND :endDate " +
+            "AND l.type = 'EXPENSE' " +
+            "AND l.date BETWEEN :monthStart AND :monthEnd")
+    Double findAverageExpenseByAgeRange(
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate,
+            @Param("monthStart") LocalDate monthStart,
+            @Param("monthEnd") LocalDate monthEnd
+    );
+
     // 카테고리별 지출 통계 조회
     @Query("SELECT new com.team2.fabackend.api.goals.dto.CategoryStatResponse(l.category, SUM(l.amount)) " +
             "FROM Ledger l " +
@@ -41,4 +52,6 @@ public interface LedgerRepository extends JpaRepository<Ledger, Long> {
     List<Ledger> findAllByUserId(Long userId);
     // 기간별 전체 내역 조회
     List<Ledger> findByDateBetween(LocalDate start, LocalDate end);
+
+
 }

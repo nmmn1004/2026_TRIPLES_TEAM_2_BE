@@ -24,7 +24,7 @@ public class LedgerController {
     @PostMapping("/add")
     @Operation(summary = "가계부 내역 저장", description = "로그인된 유저의 가계부 내역을 저장하고 관련 목표에 자동 반영")
     public ResponseEntity<Void> addLedger(
-            @AuthenticationPrincipal User user,
+            @PathVariable User user,
             @RequestBody LedgerRequest request) {
 
         ledgerService.saveLedger(user.getId(), request); // 유저 ID 전달
@@ -34,7 +34,7 @@ public class LedgerController {
     @GetMapping("/list")
     @Operation(summary = "가계부 내역 조회", description = "현재 로그인된 유저의 모든 가계부 내역 불러오기")
     public ResponseEntity<List<Ledger>> getAllLedgers(
-            @AuthenticationPrincipal User user) {
+            @PathVariable User user) {
 
         List<Ledger> ledgers = ledgerService.findAllByUserId(user.getId()); // 유저별 조회
         return ResponseEntity.ok(ledgers);

@@ -1,6 +1,7 @@
 package com.team2.fabackend.api.analysis;
 
 import com.team2.fabackend.api.analysis.dto.PersonalAnalysisResponse;
+import com.team2.fabackend.service.Analysis.AnalysisService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -11,7 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/analysis")
 @RequiredArgsConstructor
 public class AnalysisController {
-    private final com.team2.fabackend.service.analysis.AnalysisService analysisService;
+    private final AnalysisService analysisService;
 
     @GetMapping("/pattern/{userId}")
     public PersonalAnalysisResponse getPersonalAnalysis(@PathVariable Long userId) {
