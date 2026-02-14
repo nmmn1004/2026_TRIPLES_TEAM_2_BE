@@ -38,8 +38,8 @@ public class AdviceService {
                 .user(u -> u
                         .text(generateAdvicePrompt.getTemplate())
                         .param("content", content)
-                        .param("currentSpends", currentSpendsJson)
-                        .param("setSpends", setSpendsJson)
+//                        .param("currentSpends", currentSpendsJson)
+//                        .param("setSpends", setSpendsJson)
                 )
                 .call()
                 .content();
