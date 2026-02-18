@@ -54,39 +54,13 @@ public class AdviceService {
                 );
             }
 
-//            BudgetGoal setGoal = budgetReader.getById(userId);
+            BudgetGoal setGoal = budgetReader.getById(userId);
 
-            // ===== 실제 서비스 코드 =====
-//            Map<String, Long> currentSpends = ledgerReader.getMonthlyCategorySumMap(userId);
-//            Map<String, Long> spendPercent = calculateSpendPercent(currentSpends, setGoal);
-//            List<MonthlyLedgerDetailResponse> monthlyDetails = ledgerReader.getMonthlyLedgerDetails(userId).stream()
-//                    .limit(20)
-//                    .toList();
-
-            // ===== 테스트 코드 =====
-            Map<String, Long> spendPercent = Map.of(
-                    "food", 10L,
-                    "transport", -10L,
-                    "leisure", 5L,
-                    "fixed", 2L
-            );
-
-            Map<String, Long> currentSpends = Map.of(
-                    "food", 300000L,
-                    "transport", 70000L,
-                    "leisure", 300000L,
-                    "fixed", 500000L
-            );
-
-            List<MonthlyLedgerDetailResponse> monthlyDetails = List.of(
-                    new MonthlyLedgerDetailResponse("leisure", 45000L, LocalDate.of(2026, 2, 1), LocalTime.of(14, 22, 10)),
-                    new MonthlyLedgerDetailResponse("food", 12000L, LocalDate.of(2026, 2, 1), LocalTime.of(12, 30)),
-                    new MonthlyLedgerDetailResponse("food", 12000L, LocalDate.of(2026, 2, 3), LocalTime.of(12, 30)),
-                    new MonthlyLedgerDetailResponse("transport", 3500L, LocalDate.of(2026, 2, 4), LocalTime.of(8, 40)),
-                    new MonthlyLedgerDetailResponse("leisure", 45000L, LocalDate.of(2026, 2, 2), LocalTime.of(19, 22, 10)),
-                    new MonthlyLedgerDetailResponse("food", 12000L, LocalDate.of(2026, 2, 7), LocalTime.of(12, 30)),
-                    new MonthlyLedgerDetailResponse("fixed", 150000L, LocalDate.of(2026, 2, 1), LocalTime.of(0, 5))
-            );
+            Map<String, Long> currentSpends = ledgerReader.getMonthlyCategorySumMap(userId);
+            Map<String, Long> spendPercent = calculateSpendPercent(currentSpends, setGoal);
+            List<MonthlyLedgerDetailResponse> monthlyDetails = ledgerReader.getMonthlyLedgerDetails(userId).stream()
+                    .limit(20)
+                    .toList();
 
             ObjectMapper mapper = JsonMapper.builder()
                     .addModule(new JavaTimeModule())
