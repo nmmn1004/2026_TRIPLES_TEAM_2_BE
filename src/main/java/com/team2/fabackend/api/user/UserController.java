@@ -1,6 +1,7 @@
 package com.team2.fabackend.api.user;
 
 import com.team2.fabackend.api.user.dto.PasswordRequest;
+import com.team2.fabackend.api.user.dto.UserDeleteRequest;
 import com.team2.fabackend.api.user.dto.UserInfoRequest;
 import com.team2.fabackend.api.user.dto.UserInfoResponse;
 import com.team2.fabackend.service.user.UserService;
@@ -202,9 +203,10 @@ public class UserController {
     )
     public ResponseEntity<Void> deleteUser(
             @AuthenticationPrincipal Long userId,
-            @RequestHeader("X-Password-Confirm_Token") String passwordConfirmToken
+            @RequestHeader("X-Password-Confirm_Token") String passwordConfirmToken,
+            @Valid @RequestBody UserDeleteRequest request
     ) {
-        userService.deleteUser(userId, passwordConfirmToken);
+        userService.deleteUser(userId, passwordConfirmToken, request);
         return ResponseEntity.ok().build();
     }
 }

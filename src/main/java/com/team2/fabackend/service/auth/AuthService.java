@@ -13,12 +13,14 @@ import com.team2.fabackend.service.phoneVerification.PhoneVerificationService;
 import com.team2.fabackend.service.user.UserReader;
 import com.team2.fabackend.service.user.UserWriter;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -109,7 +111,7 @@ public class AuthService {
     public String findUserId(String phoneNumber) {
         phoneVerificationService.checkVerified(phoneNumber);
 
-        User user = userReader.findGeneralUserByPhone(phoneNumber); // 확실한 객체 반환
+        User user = userReader.findGeneralUserByPhone(phoneNumber);
 
         phoneVerificationService.clearVerificationLog(phoneNumber);
         return maskUserId(user.getUserId());
@@ -132,7 +134,7 @@ public class AuthService {
 
     private String maskUserId(String userId) {
         if (userId.length() <= 3) return userId.substring(0, 1) + "**";
-        // 뒤의 3글자만 별표
+
         return userId.substring(0, userId.length() - 3) + "***";
     }
 }

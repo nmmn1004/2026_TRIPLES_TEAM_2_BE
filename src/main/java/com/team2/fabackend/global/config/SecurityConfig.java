@@ -52,14 +52,12 @@ public class SecurityConfig {
         configuration.setAllowedOriginPatterns(List.of("*"));
         configuration.setAllowCredentials(true);
 
-        /*
-        aos 호스트 주소 알게 되면 수정
         configuration.setAllowedOrigins(List.of(
-                "http://10.0.2.2",
+                "http://localhost:3000",
+                "http://localhost:5173",
                 "http://localhost:8080",
                 "https://dontory.duckdns.org"
         ));
-        */
 
         configuration.setAllowedMethods(List.of("GET", "POST", "PATCH", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));

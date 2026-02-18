@@ -21,6 +21,6 @@ public class AdviceController {
     public ResponseEntity<AdviceMessageResponse> generateAdvice(
             @AuthenticationPrincipal Long userId
     ) {
-        return null;
+        return ResponseEntity.ok(adviceService.generateAdvice(userId));
     }
 }

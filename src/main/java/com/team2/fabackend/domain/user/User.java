@@ -1,8 +1,10 @@
 package com.team2.fabackend.domain.user;
 
+import com.team2.fabackend.domain.userTerm.UserTerm;
 import com.team2.fabackend.global.entity.BaseEntity;
 import com.team2.fabackend.global.enums.SocialType;
 import com.team2.fabackend.global.enums.UserType;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -10,6 +12,7 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -17,6 +20,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Getter
@@ -47,6 +52,9 @@ public class User extends BaseEntity {
     private LocalDate birth;
     @Enumerated(value = EnumType.STRING)
     private UserType userType = UserType.USER;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<UserTerm> userTerms = new ArrayList<>();
 
     @Builder
     protected User(

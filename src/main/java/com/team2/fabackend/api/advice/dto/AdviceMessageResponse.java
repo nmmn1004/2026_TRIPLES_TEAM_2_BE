@@ -2,15 +2,14 @@ package com.team2.fabackend.api.advice.dto;
 
 import com.team2.fabackend.global.enums.ChipmunkStatus;
 import com.team2.fabackend.global.enums.ResponseStatus;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
+
+import java.util.List;
 
 public record AdviceMessageResponse(
-        @Enumerated(EnumType.STRING)
         ResponseStatus responseStatus,
-
-        @Enumerated(EnumType.STRING)
         ChipmunkStatus chipmunkStatus,
 
-        String context
+        String message,      // 메인 메시지
+
+        List<String> highlights  // 프론트 강조용 문장 분리
 ) {}

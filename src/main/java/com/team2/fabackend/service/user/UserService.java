@@ -1,8 +1,10 @@
 package com.team2.fabackend.service.user;
 
+import com.team2.fabackend.api.user.dto.UserDeleteRequest;
 import com.team2.fabackend.api.user.dto.UserInfoRequest;
 import com.team2.fabackend.api.user.dto.UserInfoResponse;
 import com.team2.fabackend.domain.user.User;
+import com.team2.fabackend.domain.user.UserDeleteReason;
 import com.team2.fabackend.global.enums.ErrorCode;
 import com.team2.fabackend.global.exception.CustomException;
 import com.team2.fabackend.service.auth.AuthVerificationService;
@@ -79,10 +81,19 @@ public class UserService {
     }
 
     @Transactional
-    public void deleteUser(Long userId, String passwordConfirmToken) {
+    public void deleteUser(Long userId, String passwordConfirmToken, UserDeleteRequest request) {
         authVerificationService.validateVerificationToken(userId, passwordConfirmToken);
 
         User user = userReader.findById(userId);
+
+        UserDeleteReason reason = UserDeleteReason.builder()
+                .birthDate(user.getBirth())
+                .reason(request.getReason())
+                .reason_detail(request.getReason_detail())
+                .build();
+
+        userWriter.createReason(reason);
+
         userWriter.delete(user);
 
         authVerificationService.deleteVerification(userId);

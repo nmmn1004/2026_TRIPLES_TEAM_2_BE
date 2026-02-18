@@ -53,5 +53,29 @@ public interface LedgerRepository extends JpaRepository<Ledger, Long> {
     // 기간별 전체 내역 조회
     List<Ledger> findByDateBetween(LocalDate start, LocalDate end);
 
+    @Query("SELECT new com.team2.fabackend.domain.ledger.MonthlyCategorySumLedger(" +
+            "l.category, SUM(l.amount)) " +
+            "FROM Ledger l " +
+            "WHERE l.userId = :userId " +
+            "AND l.type = 'EXPENSE' " +
+            "AND l.date BETWEEN :startDate AND :endDate " +
+            "GROUP BY l.category")
+    List<MonthlyCategorySumLedger> findMonthlyCategorySumByUserId(
+            @Param("userId") Long userId,
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate
+    );
 
+    @Query("SELECT new com.team2.fabackend.domain.ledger.MonthlyLedgerDetailResponse(" +
+            "l.category, l.amount, l.date, l.time) " +
+            "FROM Ledger l " +
+            "WHERE l.userId = :userId " +
+            "AND l.type = 'EXPENSE' " +
+            "AND l.date BETWEEN :startDate AND :endDate " +
+            "ORDER BY l.date DESC, l.time DESC")
+    List<MonthlyLedgerDetailResponse> findMonthlyLedgerDetailsByUserId(
+            @Param("userId") Long userId,
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate
+    );
 }
