@@ -1,6 +1,8 @@
 package com.team2.fabackend.service.user;
 
 import com.team2.fabackend.domain.user.User;
+import com.team2.fabackend.domain.user.UserDeleteReason;
+import com.team2.fabackend.domain.user.UserDeleteReasonRepository;
 import com.team2.fabackend.domain.user.UserRepository;
 import com.team2.fabackend.global.enums.ErrorCode;
 import com.team2.fabackend.global.exception.CustomException;
@@ -15,10 +17,15 @@ import java.time.LocalDate;
 @Transactional
 public class UserWriter {
     private final UserRepository userRepository;
+    private final UserDeleteReasonRepository userDeleteReasonRepository;
 
     public void create(User user) {
         validateUserNotNull(user);
         userRepository.save(user);
+    }
+
+    public void createReason(UserDeleteReason reason) {
+        userDeleteReasonRepository.save(reason);
     }
 
     public void updatePassword(User user, String encodedPassword) {
