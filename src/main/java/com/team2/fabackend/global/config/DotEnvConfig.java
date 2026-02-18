@@ -8,7 +8,6 @@ import org.springframework.context.annotation.Configuration;
 @Slf4j
 @Configuration
 public class DotEnvConfig {
-
     @Bean
     public Dotenv dotenv() {
         log.info(".env file loading...");
