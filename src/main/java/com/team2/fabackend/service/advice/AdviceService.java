@@ -135,7 +135,9 @@ public class AdviceService {
     }
 
     private ChipmunkStatus decideChipmunkStatus(Map<String, Long> spendPercent) {
-        long min = spendPercent.values().stream().min(Long::compareTo).orElse(0L);
+        long min = spendPercent.values().stream()
+                .min(Long::compareTo)
+                .orElse(0L);
         if (min < -20) return ChipmunkStatus.CHIPMUNK_NEGATIVE;
         return ChipmunkStatus.CHIPMUNK_POSITIVE;
     }

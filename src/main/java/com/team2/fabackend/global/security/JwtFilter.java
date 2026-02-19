@@ -30,17 +30,38 @@ public class JwtFilter extends OncePerRequestFilter {
 
         String token = resolveToken(request);
 
+        log.info("🔍 URI: {}, Token: {}", request.getRequestURI(),
+                token != null ? "있음" : "없음");
+
         if (StringUtils.hasText(token) && jwtProvider.validateToken(token)) {
-            Authentication authentication = jwtProvider.getAuthentication(token);
-            SecurityContextHolder.getContext().setAuthentication(authentication);
+            try {
+                Long userId = jwtProvider.getUserIdFromToken(token);
+                log.info("🔍 UserId 추출 성공: {}", userId);
+
+                Authentication authentication = jwtProvider.getAuthentication(token);
+                log.info("🔍 Authentication 생성:");
+                log.info("   - Principal: {} (type: {})",
+                        authentication.getPrincipal(),
+                        authentication.getPrincipal().getClass().getSimpleName());
+                log.info("   - Authorities: {}", authentication.getAuthorities());
+
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+                log.info("✅ SecurityContext 설정 완료");
+
+            } catch (Exception e) {
+                log.error("❌ Authentication 생성 실패: {}", e.getMessage());
+            }
+        } else {
+            log.warn("❌ 토큰 없음 또는 유효하지 않음");
         }
 
         filterChain.doFilter(request, response);
     }
 
-
     private String resolveToken(HttpServletRequest request) {
         String bearerToken = request.getHeader("Authorization");
+        log.info("🔍 Authorization Header: '{}'", bearerToken);
+
         if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
             return bearerToken.substring(7);
         }

@@ -1,6 +1,7 @@
 package com.team2.fabackend.service.userTerm;
 
 import com.team2.fabackend.api.term.dto.TermInfoResponse;
+import com.team2.fabackend.api.term.dto.TermSaveRequest;
 import com.team2.fabackend.api.term.dto.UserTermStatusResponse;
 import com.team2.fabackend.domain.term.Term;
 import com.team2.fabackend.domain.user.User;
@@ -52,5 +53,29 @@ public class UserTermService {
     public List<UserTermStatusResponse> getUserTermStatus(Long userId) {
         User user = userReader.findById(userId);
         return userTermReader.findUserTermStatus(user);
+    }
+
+    public TermInfoResponse createTerm(TermSaveRequest request) {
+        Term term = Term.builder()
+                .title(request.getTitle())
+                .content(request.getContent())
+                .version(request.getVersion())
+                .required(request.isRequired())
+                .build();
+
+        return TermInfoResponse.from(userTermWriter.createTerm(term));
+    }
+
+    public TermInfoResponse updateTerm(Long termId, TermSaveRequest request) {
+        Term term = userTermReader.findById(termId);
+
+        term.updateTerm(
+                request.getTitle() == null ? term.getTitle() : request.getTitle(),
+                request.getContent() == null ? term.getContent() : request.getContent(),
+                request.getVersion() == null ? term.getVersion() : request.getVersion(),
+                request.isRequired()
+        );
+
+        return TermInfoResponse.from(term);
     }
 }

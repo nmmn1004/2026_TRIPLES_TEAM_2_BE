@@ -30,14 +30,15 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
-                                "/**",
                                 "/auth/**",
                                 "/terms/**",
                                 "/swagger-ui/**",
                                 "/swagger-ui.html",
                                 "/v3/api-docs/**"
                         ).permitAll()
-                        //.anyRequest().authenticated()
+                        .requestMatchers(HttpMethod.POST, "/terms/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PATCH, "/terms/**").hasRole("ADMIN")
+                        .anyRequest().authenticated()
                 )
                 .addFilterBefore(new JwtFilter(jwtProvider),
                         UsernamePasswordAuthenticationFilter.class);
