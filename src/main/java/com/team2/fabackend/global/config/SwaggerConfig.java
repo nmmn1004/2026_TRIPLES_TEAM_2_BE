@@ -30,7 +30,6 @@ public class SwaggerConfig {
                 .in(SecurityScheme.In.HEADER)
                 .name("X-Password-Confirm-Token");
 
-        // 글로벌 보안 요구사항 (기본적으로 모든 API에 JWT 적용)
         SecurityRequirement jwtOnly = new SecurityRequirement()
                 .addList(jwtSchemeName);
 
