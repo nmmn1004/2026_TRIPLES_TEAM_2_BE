@@ -6,6 +6,8 @@ import com.team2.fabackend.domain.term.TermRepository;
 import com.team2.fabackend.domain.user.User;
 import com.team2.fabackend.domain.userTerm.UserTerm;
 import com.team2.fabackend.domain.userTerm.UserTermRepository;
+import com.team2.fabackend.global.enums.ErrorCode;
+import com.team2.fabackend.global.exception.CustomException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,6 +23,11 @@ import java.util.stream.Collectors;
 public class UserTermReader {
     private final TermRepository termRepository;
     private final UserTermRepository userTermRepository;
+
+    public Term findById(Long termId) {
+        return termRepository.findById(termId)
+                .orElseThrow(() -> new CustomException(ErrorCode.INVALID_DATA_VALUE));
+    }
 
     public List<Term> findActiveTerms() {
         return termRepository.findAll();

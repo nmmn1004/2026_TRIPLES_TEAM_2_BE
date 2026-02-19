@@ -1,6 +1,5 @@
 package com.team2.fabackend.api.term.dto;
 
-import com.team2.fabackend.api.user.dto.UserInfoResponse;
 import com.team2.fabackend.domain.term.Term;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
@@ -39,7 +38,7 @@ public class TermInfoResponse {
                 .content(term.getContent())
                 .version(term.getVersion())
                 .required(term.isRequired())
-                .effectiveAt(term.getCreatedAt())
+                .effectiveAt(LocalDate.from(term.getCreatedAt()))
                 .build();
     }
 }

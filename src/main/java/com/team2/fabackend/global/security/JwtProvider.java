@@ -98,6 +98,6 @@ public class JwtProvider {
                 new SimpleGrantedAuthority("ROLE_" + (role != null ? role : "USER"))
         );
 
-        return new UsernamePasswordAuthenticationToken(userId, "", authorities);
+        return new JwtAuthenticationToken(userId, authorities);
     }
 }
