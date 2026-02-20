@@ -20,11 +20,14 @@ jobs:
           port: 22
           script: |
             cd ~/2026_TRIPLES_TEAM_2_BE
-
+          
             git pull origin main
-
+          
+            aws ecr get-login-password --region ap-northeast-2 | \
+            docker login --username AWS --password-stdin ${{ secrets.ECR_REGISTRY }}
+          
             docker compose pull
             docker compose down
             docker compose up -d
-
+          
             docker compose ps
