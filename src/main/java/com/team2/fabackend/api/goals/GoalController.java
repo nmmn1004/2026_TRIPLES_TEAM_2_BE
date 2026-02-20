@@ -27,10 +27,22 @@ public class GoalController {
         return ResponseEntity.ok(goalId);
     }
 
-    //목표 조회 (R)
+    //전체 목표 조회 (R)
     @GetMapping("/list")
     public ResponseEntity<Map<String, Object>> getGoalList() {
         List<GoalResponse> data = goalService.findAllGoals();
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("success", true);
+        response.put("data", data);
+
+        return ResponseEntity.ok(response);
+    }
+
+    //진행중인(유효한) 목표 조회 (R)
+    @GetMapping("/active/{userId}")
+    public ResponseEntity<Map<String, Object>> getActiveGoals(@PathVariable Long userId) {
+        List<GoalResponse> data = goalService.findActiveGoals(userId);
 
         Map<String, Object> response = new HashMap<>();
         response.put("success", true);
