@@ -12,6 +12,7 @@ public enum ErrorCode {
      */
     USER_NOT_FOUND(HttpStatus.NOT_FOUND, "U001", "사용자를 찾을 수 없습니다."), // DB에 해당 ID가 없는 경우
     INVALID_PASSWORD(HttpStatus.UNAUTHORIZED, "U002", "비밀번호가 일치하지 않습니다."), // 로그인/비밀번호 확인 시 불일치
+    INSUFFICIENT_ADMIN_AUTHORITY(HttpStatus.FORBIDDEN, "U003", "관리자 권한이 필요합니다."),
 
     /**
      * [A] Auth 관련 에러 (회원가입 및 본인인증)
@@ -40,6 +41,7 @@ public enum ErrorCode {
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "S001", "서버 내부 오류가 발생했습니다."),
     INVALID_INPUT_VALUE(HttpStatus.BAD_REQUEST, "S002", "잘못된 입력값입니다."), // @Valid 검증 실패 시 등
     INVALID_DATA_VALUE(HttpStatus.BAD_REQUEST, "S003", "해당 값을 찾을 수 없습니다."),
+    AI_REPORT_GENERATION_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "S004", "AI 리포트 생성에 실패했습니다."),
 
     /**
      * [P] Phone Verification 관련 에러
@@ -52,7 +54,7 @@ public enum ErrorCode {
     /**
      * [P] Phone Verification 관련 에러
      */
-    EMAIL_SEND_FAILD(HttpStatus.INTERNAL_SERVER_ERROR, "E001", "이메일 발송에 실패하였습니다.");
+    EMAIL_SEND_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "E001", "이메일 발송에 실패하였습니다.");
 
     private final HttpStatus status;
     private final String code;

@@ -20,4 +20,19 @@ public class PromptConfig {
                 loader.getResource("classpath:prompts/advice/generateAdviceSystem.st")
         );
     }
+
+    @Bean
+    public PromptTemplate generateAiReportSystemPrompt(ResourceLoader loader) {
+        return new PromptTemplate(
+                loader.getResource("classpath:prompts/aiReport/generateAiReportSystem.st")
+        );
+    }
+
+    @Bean
+    public PromptTemplate generateAiReportPrompt(ResourceLoader loader) {
+        return new PromptTemplate(
+                loader.getResource("classpath:prompts/aiReport/generateAiReport.st")
+        );
+    }
+
 }

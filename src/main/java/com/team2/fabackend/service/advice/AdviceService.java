@@ -45,6 +45,7 @@ public class AdviceService {
     public AdviceMessageResponse generateAdvice(Long userId) {
         try {
             LocalDate today = LocalDate.now();
+            
             if (adviceHistoryRepository.existsByUserIdAndCreatedAt(userId, today)) {
                 return new AdviceMessageResponse(
                         ResponseStatus.EXIST,
