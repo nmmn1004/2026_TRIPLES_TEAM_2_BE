@@ -1,5 +1,6 @@
 package com.team2.fabackend.api.auth;
 
+import com.team2.fabackend.api.auth.dto.FindIdResponse;
 import com.team2.fabackend.api.auth.dto.LoginRequest;
 import com.team2.fabackend.api.auth.dto.LoginResponse;
 import com.team2.fabackend.api.auth.dto.PasswordResetRequest;
@@ -125,8 +126,9 @@ public class AuthController {
 
     @PostMapping("/find/id")
     @Operation(summary = "아이디 찾기", description = "인증 완료된 번호를 통해 마스킹된 아이디를 반환합니다.")
-    public ResponseEntity<String> findId(@RequestBody PhoneSendRequest request) {
-        return ResponseEntity.ok(authService.findUserId(request.getPhoneNumber()));
+    public ResponseEntity<FindIdResponse> findId(@RequestBody PhoneSendRequest request) {
+        String maskedId = authService.findUserId(request.getPhoneNumber());
+        return ResponseEntity.ok(new FindIdResponse(maskedId));
     }
 
     @PatchMapping("/find/password")
