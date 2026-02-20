@@ -58,13 +58,10 @@ public class GoalService {
             double diff = totalSpent - cumulativeAllowance;
             long changedDays = Math.round(Math.abs(diff / E));
 
-            long totalPeriod = java.time.temporal.ChronoUnit.DAYS.between(goal.getStartDate(), goal.getEndDate());
-            if (totalPeriod <= 0) totalPeriod = 1;
-
-            long delayedDaysForRate = (diff > 0) ? changedDays : 0;
-            double successRate = Math.max(0, Math.round(((double) (totalPeriod - delayedDaysForRate) / totalPeriod * 100) * 10) / 10.0);
-
             String status = determineStatus(totalSpent, cumulativeAllowance);
+
+            double successRate = calculateSuccessRate(goal, diff, changedDays);
+
             List<CategoryStatResponse> categoryStats = ledgerRepository.findCategoryStatsBetweenDates(
                     goal.getStartDate(), LocalDate.now());
 
@@ -80,6 +77,38 @@ public class GoalService {
                     .isDelayed(diff > 0)
                     .build();
         }).collect(Collectors.toList());
+    }
+
+    // R : 현재 진행중인 목표(유효한 목표) 조회
+    public List<GoalResponse> findActiveGoals(Long userId) {
+        LocalDate today = LocalDate.now();
+
+        return goalRepository.findAllByUserId(userId).stream()
+                .filter(goal -> !today.isBefore(goal.getStartDate()) && !today.isAfter(goal.getEndDate()))
+                .map(goal -> {
+                    Long totalSpent = goal.getCurrentAmount();
+
+                    Double E = goal.getDailyAllowance();
+                    long passedDays = java.time.temporal.ChronoUnit.DAYS.between(goal.getStartDate(), LocalDate.now());
+                    double cumulativeAllowance = E * Math.max(0, passedDays);
+
+                    double diff = totalSpent - cumulativeAllowance;
+                    long changedDays = Math.round(Math.abs(diff / E));
+
+                    String status = determineStatus(totalSpent, cumulativeAllowance);
+
+                    return GoalResponse.builder()
+                            .id(goal.getId())
+                            .title(goal.getTitle())
+                            .targetAmount(goal.getTargetAmount())
+                            .currentSpend(totalSpent)
+                            .status(status)
+                            .successRate(calculateSuccessRate(goal, diff, changedDays))
+                            .changedDays(changedDays)
+                            .isDelayed(diff > 0)
+                            .build();
+                })
+                .collect(Collectors.toList());
     }
 
     // U : 목표 수정
@@ -138,5 +167,14 @@ public class GoalService {
         if (spent > allowance * 1.1) return "위험";
         if (spent > allowance) return "주의";
         return "안전";
+    }
+
+    private double calculateSuccessRate(Goal goal, double diff, long changedDays) {
+        long totalPeriod = java.time.temporal.ChronoUnit.DAYS.between(goal.getStartDate(), goal.getEndDate());
+        if (totalPeriod <= 0) totalPeriod = 1;
+
+        long delayedDaysForRate = (diff > 0) ? changedDays : 0;
+
+        return Math.max(0, Math.round(((double) (totalPeriod - delayedDaysForRate) / totalPeriod * 100) * 10) / 10.0);
     }
 }
