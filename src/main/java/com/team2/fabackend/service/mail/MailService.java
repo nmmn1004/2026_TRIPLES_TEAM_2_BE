@@ -4,7 +4,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.team2.fabackend.api.aireport.dto.AiReportResponse;
+import com.team2.fabackend.api.budget.dto.AiBudgetGoalDto;
 import com.team2.fabackend.api.goals.dto.GoalResponse;
+import com.team2.fabackend.domain.budget.BudgetGoal;
 import com.team2.fabackend.domain.ledger.MonthlyLedgerDetailResponse;
 import com.team2.fabackend.domain.user.User;
 import com.team2.fabackend.global.enums.ErrorCode;
@@ -84,7 +86,16 @@ public class MailService {
 
         for (int attempt = 1; attempt <= maxRetries; attempt++) {
             try {
-                Map<String, Long> currentSpends = ledgerReader.getMonthlyCategorySumMap(userId);
+                BudgetGoal budgetGoal = budgetReader.getById(userId);
+
+                AiBudgetGoalDto aiBudget = new AiBudgetGoalDto(
+                        budgetGoal.getFoodAmount(),
+                        budgetGoal.getTransportAmount(),
+                        budgetGoal.getLeisureAmount(),
+                        budgetGoal.getFixedAmount(),
+                        budgetGoal.getTotalAmount()
+                );
+
                 List<GoalResponse> goals = goalService.findAllGoals();
                 List<MonthlyLedgerDetailResponse> monthlyDetails = ledgerReader.getMonthlyLedgerDetails(userId);
 
@@ -92,8 +103,7 @@ public class MailService {
                         .addModule(new JavaTimeModule())
                         .build();
 
-
-                String currentSpendsJson = mapper.writeValueAsString(currentSpends);
+                String budgetGoalJson = mapper.writeValueAsString(aiBudget);
                 String goalsJson = mapper.writeValueAsString(goals);
                 String monthlyDetailsJson = mapper.writeValueAsString(monthlyDetails);
 
@@ -101,10 +111,10 @@ public class MailService {
                         .system(generateAiReportSystemPrompt.getTemplate())
                         .user(u -> u
                                 .text(generateAiReportPrompt.getTemplate())
-                                .param("userNickName", userNickName)
-                                .param("currentSpendsJson", currentSpendsJson)
-                                .param("goalsJson", goalsJson)
-                                .param("monthlyDetailsJson", monthlyDetailsJson)
+                                .param("userNickName", userNickName == null ? "고객" : userNickName)
+                                .param("budgetGoalJson", budgetGoalJson == null ? "{}" : budgetGoalJson)
+                                .param("goalsJson", goalsJson == null ? "[]" : goalsJson)
+                                .param("monthlyDetailsJson", monthlyDetailsJson == null ? "[]" : monthlyDetailsJson)
                         )
                         .call()
                         .content();
