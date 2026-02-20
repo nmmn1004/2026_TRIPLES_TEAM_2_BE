@@ -25,7 +25,7 @@ jobs:
 
             git pull origin main
 
-            docker compose pull api
+            docker compose pull spring_app
 
             docker compose down
 
@@ -33,6 +33,6 @@ jobs:
             docker container prune -f
             docker builder prune -af
 
-            docker compose --profile proxy up -d
+            docker compose --profile proxy up -d --build
 
             docker compose ps
