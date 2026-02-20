@@ -11,6 +11,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # 1️⃣ EC2 SSH 접속 및 배포
       - name: Deploy to EC2
         uses: appleboy/ssh-action@v0.1.7
         with:
@@ -19,28 +20,19 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           port: 22
           script: |
-            set -e
-
             cd ~/2026_TRIPLES_TEAM_2_BE
 
+            # 1️⃣ 최신 코드 반영
             git pull origin main
 
-            # 🔐 ECR 로그인 (토큰 12시간 만료 대비)
-            aws ecr get-login-password --region ap-northeast-2 | \
-            docker login --username AWS --password-stdin ${{ secrets.ECR_REGISTRY }}
+            # 2️⃣ 최신 이미지 pull
+            docker compose pull
 
-            # 🔄 최신 이미지 pull
-            docker compose pull spring_app
-
-            # 🛑 기존 컨테이너 종료
+            # 3️⃣ 기존 컨테이너 삭제 후 새로 실행
             docker compose down
+            docker system prune -a
+            docker compose up -d --build
 
-            # 🧹 찌꺼기 정리
-            docker image prune -af
-            docker container prune -f
-            docker builder prune -af
-
-            # 🚀 재기동 (로컬 빌드 금지)
-            docker compose --profile proxy up -d
-
+            # 4️⃣ 상태 확인
             docker compose ps
+            docker compose logs --tail=50
