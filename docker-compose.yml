@@ -47,12 +47,15 @@ services:
       - spring_mysql_api
 
   spring_app:
+    build:
+      context: .
+      dockerfile: Dockerfile
     image: ${ECR_REGISTRY}fa-project:latest
     container_name: spring_app
     env_file:
       - .env
     environment:
-      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE}
+      SPRING_PROFILES_ACTIVE: dev
       SPRING_DATASOURCE_URL: ${DB_JDBC_URL}
       SPRING_DATASOURCE_USERNAME: ${DB_USER}
       SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}

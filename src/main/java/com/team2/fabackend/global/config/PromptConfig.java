@@ -7,32 +7,24 @@ import org.springframework.core.io.ResourceLoader;
 
 @Configuration
 public class PromptConfig {
+
     @Bean
     public PromptTemplate generateAdvicePrompt(ResourceLoader loader) {
-        return new PromptTemplate(
-                loader.getResource("classpath:prompts/advice/generateAdvice.st")
-        );
+        return new PromptTemplate("classpath:/prompts/advice/generateAdvice.st");
     }
 
     @Bean
     public PromptTemplate generateAdviceSystemPrompt(ResourceLoader loader) {
-        return new PromptTemplate(
-                loader.getResource("classpath:prompts/advice/generateAdviceSystem.st")
-        );
+        return new PromptTemplate("classpath:/prompts/advice/generateAdviceSystem.st");
     }
 
     @Bean
     public PromptTemplate generateAiReportSystemPrompt(ResourceLoader loader) {
-        return new PromptTemplate(
-                loader.getResource("classpath:prompts/aiReport/generateAiReportSystem.st")
-        );
+        return new PromptTemplate("classpath:/prompts/aiReport/generateAiReportSystem.st");
     }
 
     @Bean
     public PromptTemplate generateAiReportPrompt(ResourceLoader loader) {
-        return new PromptTemplate(
-                loader.getResource("classpath:prompts/aiReport/generateAiReport.st")
-        );
+        return new PromptTemplate("classpath:/prompts/aiReport/generateAiReport.st");
     }
-
 }
