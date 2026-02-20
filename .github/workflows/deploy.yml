@@ -29,14 +29,18 @@ jobs:
             aws ecr get-login-password --region ap-northeast-2 | \
             docker login --username AWS --password-stdin ${{ secrets.ECR_REGISTRY }}
 
+            # 🔄 최신 이미지 pull
             docker compose pull spring_app
 
+            # 🛑 기존 컨테이너 종료
             docker compose down
 
+            # 🧹 찌꺼기 정리
             docker image prune -af
             docker container prune -f
             docker builder prune -af
 
-            docker compose --profile proxy up -d --build
+            # 🚀 재기동 (로컬 빌드 금지)
+            docker compose --profile proxy up -d
 
             docker compose ps
