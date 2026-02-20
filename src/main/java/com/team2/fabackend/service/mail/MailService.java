@@ -5,8 +5,11 @@ import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.team2.fabackend.api.aireport.dto.AiReportResponse;
 import com.team2.fabackend.api.budget.dto.AiBudgetGoalDto;
+import com.team2.fabackend.api.goals.dto.AiGoalDto;
 import com.team2.fabackend.api.goals.dto.GoalResponse;
 import com.team2.fabackend.domain.budget.BudgetGoal;
+import com.team2.fabackend.domain.goals.Goal;
+import com.team2.fabackend.domain.goals.GoalRepository;
 import com.team2.fabackend.domain.ledger.MonthlyLedgerDetailResponse;
 import com.team2.fabackend.domain.user.User;
 import com.team2.fabackend.global.enums.ErrorCode;
@@ -38,7 +41,7 @@ public class MailService {
 
     private final BudgetReader budgetReader;
     private final LedgerReader ledgerReader;
-    private final GoalService goalService;
+    private final GoalRepository goalRepository;
 
     private final ChatClient chatClient;
     private final PromptTemplate generateAiReportPrompt;
@@ -47,11 +50,11 @@ public class MailService {
     public AiReportResponse sendAiReport(Long userId, String receiverEmail) {
         User user = userReader.findById(userId);
 
-        String message = generateAiReport(userId);
-
         if (user.getUserType() != UserType.ADMIN) {
             throw new CustomException(ErrorCode.INSUFFICIENT_ADMIN_AUTHORITY);
         }
+
+        String message = generateAiReport(userId);
 
         MimeMessage mimeMessage = javaMailSender.createMimeMessage();
 
@@ -96,7 +99,16 @@ public class MailService {
                         budgetGoal.getTotalAmount()
                 );
 
-                List<GoalResponse> goals = goalService.findAllGoals();
+                List<Goal> goals = goalRepository.findAllByUserId(userId);
+
+                List<AiGoalDto> aiGoals = goals.stream()
+                        .map(goal -> new AiGoalDto(
+                                goal.getTitle(),
+                                goal.getTargetAmount(),
+                                goal.getEndDate()
+                        ))
+                        .toList();
+
                 List<MonthlyLedgerDetailResponse> monthlyDetails = ledgerReader.getMonthlyLedgerDetails(userId);
 
                 ObjectMapper mapper = JsonMapper.builder()
@@ -104,7 +116,7 @@ public class MailService {
                         .build();
 
                 String budgetGoalJson = mapper.writeValueAsString(aiBudget);
-                String goalsJson = mapper.writeValueAsString(goals);
+                String goalsJson = mapper.writeValueAsString(aiGoals);
                 String monthlyDetailsJson = mapper.writeValueAsString(monthlyDetails);
 
                 String message = chatClient.prompt()
@@ -121,6 +133,12 @@ public class MailService {
 
                 log.info("✅ AI 리포트 생성 성공 (userId: {}, attempt: {}/{})",
                         userId, attempt, maxRetries);
+
+                message = message
+                        .replaceAll("(?s)```html", "")
+                        .replaceAll("```", "")
+                        .trim();
+
                 return message;
 
             } catch (Exception e) {
