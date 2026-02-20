@@ -47,7 +47,12 @@ public enum ErrorCode {
     SMS_SEND_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "P001", "SMS 발송에 실패했습니다."),
     EXPIRED_VERIFICATION_CODE(HttpStatus.BAD_REQUEST, "P002", "인증번호가 만료되었습니다."),
     INVALID_VERIFICATION_CODE(HttpStatus.BAD_REQUEST, "P003", "인증번호가 일치하지 않습니다."),
-    PHONE_NOT_VERIFIED(HttpStatus.FORBIDDEN, "P004", "전화번호 인증이 완료되지 않았거나 시간이 초과되었습니다.");
+    PHONE_NOT_VERIFIED(HttpStatus.FORBIDDEN, "P004", "전화번호 인증이 완료되지 않았거나 시간이 초과되었습니다."),
+
+    /**
+     * [P] Phone Verification 관련 에러
+     */
+    EMAIL_SEND_FAILD(HttpStatus.INTERNAL_SERVER_ERROR, "E001", "이메일 발송에 실패하였습니다.");
 
     private final HttpStatus status;
     private final String code;

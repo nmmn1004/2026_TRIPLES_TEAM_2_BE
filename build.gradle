@@ -54,6 +54,11 @@ dependencies {
     implementation 'org.springframework.ai:spring-ai-starter-model-google-genai'
 
     // ---------------------------
+    // Gmail SMTP
+    // ---------------------------
+    implementation 'org.springframework.boot:spring-boot-starter-mail'
+
+    // ---------------------------
     // Utilities
     // ---------------------------
     implementation 'io.github.cdimascio:java-dotenv:5.1.1'
