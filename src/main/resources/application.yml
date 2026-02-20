@@ -12,6 +12,17 @@ spring:
           options:
             model: gemini-2.0-flash
             temperature: 0.7
+  mail:
+    host: smtp.gmail.com
+    port: 587                   # SMTP 서버 포트
+    username: ${GOOGLE_APP_ID}
+    password: ${GOOGLE_APP_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          auth: true            # 사용자 인증 시도 여부
+          starttls:
+            enable: true        # starttls 활성화 여부
 
 server:
   forward-headers-strategy: framework
