@@ -25,6 +25,10 @@ jobs:
 
             git pull origin main
 
+            # 🔐 ECR 로그인 (토큰 12시간 만료 대비)
+            aws ecr get-login-password --region ap-northeast-2 | \
+            docker login --username AWS --password-stdin ${{ secrets.ECR_REGISTRY }}
+
             docker compose pull spring_app
 
             docker compose down
