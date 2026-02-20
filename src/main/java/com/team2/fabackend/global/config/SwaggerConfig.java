@@ -39,7 +39,7 @@ public class SwaggerConfig {
 
         return new OpenAPI()
                 .info(new Info()
-                        .title("Team2 Backend API")
+                        .title("Toktory API")
                         .description("""
                                 <h2>백엔드 API Swagger</h2>
                                 <h4>인증 방법</h4>

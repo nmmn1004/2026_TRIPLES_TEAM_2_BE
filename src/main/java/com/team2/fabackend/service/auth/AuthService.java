@@ -114,6 +114,7 @@ public class AuthService {
         User user = userReader.findGeneralUserByPhone(phoneNumber);
 
         phoneVerificationService.clearVerificationLog(phoneNumber);
+
         return maskUserId(user.getUserId());
     }
 
