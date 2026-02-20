@@ -1,8 +1,18 @@
 package com.team2.fabackend.service.mail;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.json.JsonMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.team2.fabackend.api.aireport.dto.AiReportResponse;
+import com.team2.fabackend.api.goals.dto.GoalResponse;
+import com.team2.fabackend.domain.ledger.MonthlyLedgerDetailResponse;
 import com.team2.fabackend.domain.user.User;
 import com.team2.fabackend.global.enums.ErrorCode;
+import com.team2.fabackend.global.enums.UserType;
 import com.team2.fabackend.global.exception.CustomException;
+import com.team2.fabackend.service.budget.BudgetReader;
+import com.team2.fabackend.service.goals.GoalService;
+import com.team2.fabackend.service.ledger.LedgerReader;
 import com.team2.fabackend.service.user.UserReader;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +23,9 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+import java.util.Map;
+
 @Service
 @Slf4j
 @RequiredArgsConstructor
@@ -21,32 +34,103 @@ public class MailService {
 
     private final UserReader userReader;
 
-    private final ChatClient chatClient;
-    private final PromptTemplate generateAdvicePrompt;
-    private final PromptTemplate generateAdviceSystemPrompt;
+    private final BudgetReader budgetReader;
+    private final LedgerReader ledgerReader;
+    private final GoalService goalService;
 
-    public void sendAiReport(Long userId, String receiverEmail) {
+    private final ChatClient chatClient;
+    private final PromptTemplate generateAiReportPrompt;
+    private final PromptTemplate generateAiReportSystemPrompt;
+
+    public AiReportResponse sendAiReport(Long userId, String receiverEmail) {
         User user = userReader.findById(userId);
+
+        String message = generateAiReport(userId);
+
+        if (user.getUserType() != UserType.ADMIN) {
+            throw new CustomException(ErrorCode.INSUFFICIENT_ADMIN_AUTHORITY);
+        }
 
         MimeMessage mimeMessage = javaMailSender.createMimeMessage();
 
         try {
             MimeMessageHelper mimeMessageHelper = new MimeMessageHelper(mimeMessage, false, "UTF-8");
 
-            mimeMessageHelper.setSubject(user.getNickName() + "님의 AI 소비 분석 리포트");
-
-
+            mimeMessageHelper.setFrom("jjj4120@gmail.com");
 
             mimeMessageHelper.setTo(receiverEmail);
+
+            mimeMessageHelper.setSubject(user.getNickName() + "님의 AI 소비 분석 리포트");
+
+            mimeMessageHelper.setText(message, true);
+
+            javaMailSender.send(mimeMessage);
+
+            log.info("메일 발송 성공!");
         } catch (Exception e) {
-            throw new CustomException(ErrorCode.EMAIL_SEND_FAILD);
+            log.info("메일 발송 실패!");
+
+            throw new CustomException(ErrorCode.EMAIL_SEND_FAILED);
         }
 
-
+        return new AiReportResponse(message);
     }
 
 
     private String generateAiReport(Long userId) {
-        return null;
+        String userNickName = userReader.findById(userId).getNickName();
+
+        int maxRetries = 3;
+
+        for (int attempt = 1; attempt <= maxRetries; attempt++) {
+            try {
+                Map<String, Long> currentSpends = ledgerReader.getMonthlyCategorySumMap(userId);
+                List<GoalResponse> goals = goalService.findAllGoals();
+                List<MonthlyLedgerDetailResponse> monthlyDetails = ledgerReader.getMonthlyLedgerDetails(userId);
+
+                ObjectMapper mapper = JsonMapper.builder()
+                        .addModule(new JavaTimeModule())
+                        .build();
+
+
+                String currentSpendsJson = mapper.writeValueAsString(currentSpends);
+                String goalsJson = mapper.writeValueAsString(goals);
+                String monthlyDetailsJson = mapper.writeValueAsString(monthlyDetails);
+
+                String message = chatClient.prompt()
+                        .system(generateAiReportSystemPrompt.getTemplate())
+                        .user(u -> u
+                                .text(generateAiReportPrompt.getTemplate())
+                                .param("userNickName", userNickName)
+                                .param("currentSpendsJson", currentSpendsJson)
+                                .param("goalsJson", goalsJson)
+                                .param("monthlyDetailsJson", monthlyDetailsJson)
+                        )
+                        .call()
+                        .content();
+
+                log.info("✅ AI 리포트 생성 성공 (userId: {}, attempt: {}/{})",
+                        userId, attempt, maxRetries);
+                return message;
+
+            } catch (Exception e) {
+                log.warn("❌ AI 리포트 생성 실패 (userId: {}, attempt: {}/{}): {}",
+                        userId, attempt, maxRetries, e.getMessage());
+
+                if (attempt == maxRetries) {
+                    log.error("❌ AI 리포트 최종 실패 (userId: {})", userId, e);
+                    throw new CustomException(ErrorCode.AI_REPORT_GENERATION_FAILED);
+                }
+
+                try {
+                    Thread.sleep(1000L * attempt);
+                } catch (InterruptedException ie) {
+                    Thread.currentThread().interrupt();
+                    throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR);
+                }
+            }
+        }
+
+        throw new CustomException(ErrorCode.AI_REPORT_GENERATION_FAILED);
     }
 }
