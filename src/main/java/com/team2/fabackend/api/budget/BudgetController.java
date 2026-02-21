@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 public class BudgetController {
     private final BudgetService budgetService;
 
-    @PostMapping("{userId}")
+    @PostMapping("/{userId}")
     public Long saveBudget(@RequestBody BudgetRequest request, @PathVariable Long userId) {
         return budgetService.saveBudget(request, userId);
     }

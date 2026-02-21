@@ -18,13 +18,13 @@ import java.util.List;
 public class LedgerService {
 
     private final LedgerRepository ledgerRepository;
-    private final GoalRepository goalRepository; // 🚨 목표 갱신을 위해 추가
+    private final GoalRepository goalRepository;
 
     // 가계부 내역 저장하기(C)
     public void saveLedger(Long userId, LedgerRequest request) {
         // 1. 내역 저장 (goalId는 엔티티에서 빼거나 null로 처리)
         Ledger ledger = Ledger.builder()
-                .userId(userId) // 🚨 DTO가 아닌 토큰에서 받은 userId 사용
+                .userId(userId)
                 .amount(request.getAmount())
                 .category(request.getCategory())
                 .memo(request.getMemo())
@@ -43,13 +43,14 @@ public class LedgerService {
 
     // 목표 업데이트 로직 분리 (가독성)
     private void updateRelatedGoals(Long userId, LedgerRequest request) {
-        // 유저의 모든 '진행 중'인 목표 조회 (GoalStatus는 프로젝트 설정에 맞게 조절)
         List<Goal> activeGoals = goalRepository.findAllByUserId(userId);
 
         for (Goal goal : activeGoals) {
-            // 카테고리가 일치하거나, '전체' 예산 목표인 경우 금액 합산
-            if (goal.getCategory().equals(request.getCategory()) || goal.getCategory().equals("전체")) {
-                goal.addCurrentAmount(request.getAmount()); // Goal 엔티티에 이 메서드 만드셔야 해요!
+            String goalCategory = goal.getCategory();
+            String requestCategory = request.getCategory();
+
+            if ("전체".equals(goalCategory) || (goalCategory != null && goalCategory.equals(requestCategory))) {
+                goal.addCurrentAmount(request.getAmount());
             }
         }
     }

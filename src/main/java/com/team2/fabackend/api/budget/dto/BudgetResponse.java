@@ -2,8 +2,10 @@ package com.team2.fabackend.api.budget.dto;
 
 import com.team2.fabackend.domain.budget.BudgetGoal;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Getter
+@NoArgsConstructor
 public class BudgetResponse {
     private Long id;
     private Long totalAmount;
