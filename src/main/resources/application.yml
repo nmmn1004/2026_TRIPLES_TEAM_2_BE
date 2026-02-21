@@ -11,7 +11,7 @@ spring:
         chat:
           options:
             model: gemini-2.0-flash
-            temperature: 0.7
+            temperature: 0.4
   mail:
     host: smtp.gmail.com
     port: 587                   # SMTP 서버 포트

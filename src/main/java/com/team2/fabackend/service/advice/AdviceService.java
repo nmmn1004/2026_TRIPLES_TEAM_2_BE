@@ -26,6 +26,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -37,7 +38,6 @@ public class AdviceService {
     private final PromptTemplate generateAdviceSystemPrompt;
 
     private final AdviceHistoryRepository adviceHistoryRepository;
-
     private final BudgetReader budgetReader;
     private final LedgerReader ledgerReader;
 
@@ -45,21 +45,27 @@ public class AdviceService {
     public AdviceMessageResponse generateAdvice(Long userId) {
         try {
             LocalDate today = LocalDate.now();
-            
+
             if (adviceHistoryRepository.existsByUserIdAndCreatedAt(userId, today)) {
                 return new AdviceMessageResponse(
                         ResponseStatus.EXIST,
                         ChipmunkStatus.CHIPMUNK_POSITIVE,
-                        adviceHistoryRepository.findByUserIdAndCreatedAt(userId, today).get().getAdviceMessage(),
+                        adviceHistoryRepository.findByUserIdAndCreatedAt(userId, today)
+                                .map(AdviceHistory::getAdviceMessage)
+                                .orElse("오늘의 조언을 불러오지 못했어요."),
                         Collections.emptyList()
                 );
             }
 
             BudgetGoal setGoal = budgetReader.getById(userId);
 
-            Map<String, Long> currentSpends = ledgerReader.getMonthlyCategorySumMap(userId);
+            Map<String, Long> rawSpends = ledgerReader.getMonthlyCategorySumMap(userId);
+
+            Map<String, Long> currentSpends = normalizeKeys(rawSpends);
             Map<String, Long> spendPercent = calculateSpendPercent(currentSpends, setGoal);
-            List<MonthlyLedgerDetailResponse> monthlyDetails = ledgerReader.getMonthlyLedgerDetails(userId).stream()
+
+            List<MonthlyLedgerDetailResponse> monthlyDetails = ledgerReader.getMonthlyLedgerDetails(userId)
+                    .stream()
                     .limit(20)
                     .toList();
 
@@ -71,11 +77,11 @@ public class AdviceService {
             String currentSpendsJson = mapper.writeValueAsString(currentSpends);
             String monthlyDetailsJson = mapper.writeValueAsString(monthlyDetails);
 
-            log.info("spendPercentJson = {}", spendPercentJson);
-            log.info("currentSpendsJson = {}", currentSpendsJson);
-            log.info("monthlyDetailsJson = {}", monthlyDetailsJson);
-
-            log.info("prompt = {}", generateAdvicePrompt.getTemplate());
+            log.info("🧾 spendPercentJson = {}", spendPercentJson);
+            log.info("🧾 currentSpendsJson = {}", currentSpendsJson);
+            log.info("🧾 monthlyDetailsJson = {}", monthlyDetailsJson);
+            log.info("🧠 SYSTEM PROMPT = {}", generateAdviceSystemPrompt.getTemplate());
+            log.info("🧠 USER PROMPT = {}", generateAdvicePrompt.getTemplate());
 
             ChipmunkStatus chipmunkStatus = decideChipmunkStatus(spendPercent);
 
@@ -91,13 +97,6 @@ public class AdviceService {
                     .call()
                     .content();
 
-            String debugPrompt = generateAdvicePrompt.getTemplate()
-                    .replace("{{spendPercentJson}}", spendPercentJson)
-                    .replace("{{currentSpendsJson}}", currentSpendsJson)
-                    .replace("{{monthlyDetailsJson}}", monthlyDetailsJson);
-
-            log.info("FINAL PROMPT = \n{}", debugPrompt);
-
             List<String> highlights = extractHighlights(spendPercent, monthlyDetails);
 
             adviceHistoryRepository.save(new AdviceHistory(userId, today, message));
@@ -110,6 +109,8 @@ public class AdviceService {
             );
 
         } catch (Exception e) {
+            log.error("❌ Advice 생성 실패 (userId={})", userId, e);
+
             return new AdviceMessageResponse(
                     ResponseStatus.ERROR,
                     ChipmunkStatus.CHIPMUNK_NEGATIVE,
@@ -119,18 +120,26 @@ public class AdviceService {
         }
     }
 
+    private Map<String, Long> normalizeKeys(Map<String, Long> raw) {
+        return raw.entrySet().stream()
+                .collect(Collectors.toMap(
+                        e -> e.getKey().toLowerCase(),
+                        Map.Entry::getValue,
+                        Long::sum
+                ));
+    }
+
     private Map<String, Long> calculateSpendPercent(Map<String, Long> currentSpends, BudgetGoal setGoal) {
         Map<String, Long> result = new HashMap<>();
-        result.put("food", calculatePercent(currentSpends.get("food"), setGoal.getFoodAmount()));
-        result.put("transport", calculatePercent(currentSpends.get("transport"), setGoal.getTransportAmount()));
-        result.put("leisure", calculatePercent(currentSpends.get("leisure"), setGoal.getLeisureAmount()));
-        result.put("fixed", calculatePercent(currentSpends.get("fixed"), setGoal.getFixedAmount()));
+        result.put("food", calculatePercent(currentSpends.getOrDefault("food", 0L), setGoal.getFoodAmount()));
+        result.put("transport", calculatePercent(currentSpends.getOrDefault("transport", 0L), setGoal.getTransportAmount()));
+        result.put("leisure", calculatePercent(currentSpends.getOrDefault("leisure", 0L), setGoal.getLeisureAmount()));
+        result.put("fixed", calculatePercent(currentSpends.getOrDefault("fixed", 0L), setGoal.getFixedAmount()));
         return result;
     }
 
     private Long calculatePercent(long currentSpend, long setSpend) {
         if (setSpend == 0) return 0L;
-
         double percent = ((double) (setSpend - currentSpend) / setSpend) * 100.0;
         return Math.round(percent);
     }
@@ -139,11 +148,12 @@ public class AdviceService {
         long min = spendPercent.values().stream()
                 .min(Long::compareTo)
                 .orElse(0L);
-        if (min < -20) return ChipmunkStatus.CHIPMUNK_NEGATIVE;
-        return ChipmunkStatus.CHIPMUNK_POSITIVE;
+        return min < -20 ? ChipmunkStatus.CHIPMUNK_NEGATIVE : ChipmunkStatus.CHIPMUNK_POSITIVE;
     }
 
-    private List<String> extractHighlights(Map<String, Long> spendPercent, List<MonthlyLedgerDetailResponse> monthlyDetails) {
+    private List<String> extractHighlights(Map<String, Long> spendPercent,
+                                           List<MonthlyLedgerDetailResponse> monthlyDetails) {
+
         List<String> highlights = new ArrayList<>();
 
         spendPercent.forEach((category, percent) -> {
@@ -153,6 +163,7 @@ public class AdviceService {
         });
 
         long lateNightCount = monthlyDetails.stream()
+                .filter(d -> d.getTime() != null)
                 .filter(d -> d.getTime().isAfter(LocalTime.of(21, 0)))
                 .count();
 
