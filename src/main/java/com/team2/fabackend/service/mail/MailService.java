@@ -6,7 +6,6 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.team2.fabackend.api.aireport.dto.AiReportResponse;
 import com.team2.fabackend.api.budget.dto.AiBudgetGoalDto;
 import com.team2.fabackend.api.goals.dto.AiGoalDto;
-import com.team2.fabackend.api.goals.dto.GoalResponse;
 import com.team2.fabackend.domain.budget.BudgetGoal;
 import com.team2.fabackend.domain.goals.Goal;
 import com.team2.fabackend.domain.goals.GoalRepository;
@@ -16,7 +15,6 @@ import com.team2.fabackend.global.enums.ErrorCode;
 import com.team2.fabackend.global.enums.UserType;
 import com.team2.fabackend.global.exception.CustomException;
 import com.team2.fabackend.service.budget.BudgetReader;
-import com.team2.fabackend.service.goals.GoalService;
 import com.team2.fabackend.service.ledger.LedgerReader;
 import com.team2.fabackend.service.user.UserReader;
 import jakarta.mail.internet.MimeMessage;
@@ -27,6 +25,7 @@ import org.springframework.ai.chat.prompt.PromptTemplate;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.util.List;
 import java.util.Map;
@@ -107,6 +106,7 @@ public class MailService {
                                 goal.getTargetAmount(),
                                 goal.getEndDate()
                         ))
+                        .filter(g -> StringUtils.hasText(g.getTitle()))
                         .toList();
 
                 List<MonthlyLedgerDetailResponse> monthlyDetails = ledgerReader.getMonthlyLedgerDetails(userId);
@@ -138,6 +138,12 @@ public class MailService {
                         .replaceAll("(?s)```html", "")
                         .replaceAll("```", "")
                         .trim();
+
+                log.info("🧠 SYSTEM PROMPT =====================\n{}", generateAiReportSystemPrompt.getTemplate());
+                log.info("🧠 USER PROMPT =====================\n{}", generateAiReportPrompt.getTemplate());
+                log.info("🧠 PARAM budgetGoalJson = {}", budgetGoalJson);
+                log.info("🧠 PARAM goalsJson = {}", goalsJson);
+                log.info("🧠 PARAM monthlyDetailsJson = {}", monthlyDetailsJson);
 
                 return message;
 
