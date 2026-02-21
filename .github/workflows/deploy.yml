@@ -28,6 +28,7 @@ jobs:
           
             docker compose pull
             docker compose down
+            docker system prune -a
             docker compose up -d --build
           
             docker compose ps
