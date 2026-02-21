@@ -97,6 +97,13 @@ public class AdviceService {
                     .call()
                     .content();
 
+            if (message != null) {
+                message = message
+                        .replaceAll("(?s)```text", "")
+                        .replaceAll("```", "")
+                        .trim();
+            }
+
             List<String> highlights = extractHighlights(spendPercent, monthlyDetails);
 
             adviceHistoryRepository.save(new AdviceHistory(userId, today, message));
