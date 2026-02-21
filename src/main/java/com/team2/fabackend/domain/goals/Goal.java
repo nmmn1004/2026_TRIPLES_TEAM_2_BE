@@ -65,4 +65,5 @@ public class Goal {
         if (days <= 0) days = 1; // 0으로 나누기 방지
         this.dailyAllowance = (double) this.targetAmount / days;
     }
+
 }
