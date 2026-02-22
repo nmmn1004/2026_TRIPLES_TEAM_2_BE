@@ -44,17 +44,22 @@ public class LedgerController {
     @PatchMapping("/{id}")
     @Operation(summary = "가계부 내역 수정", description = "특정 ID 가계부 내역 수정")
     public ResponseEntity<Void> updateLedger(
+            @PathVariable("id") Long id,
             @AuthenticationPrincipal Long userId,
-            @RequestBody LedgerRequest request) {
+            @RequestBody LedgerRequest request
+    ) {
 
-        ledgerService.update(userId, request);
+        ledgerService.update(id, request);
         return ResponseEntity.ok().build();
     }
 
     @DeleteMapping("/{id}")
     @Operation(summary = "가계부 내역 삭제", description = "특정 ID 가계부 내역 삭제")
-    public ResponseEntity<Void> deleteLedger(@AuthenticationPrincipal Long userId) {
-        ledgerService.delete(userId);
+    public ResponseEntity<Void> deleteLedger(
+            @PathVariable("id") Long id,
+            @AuthenticationPrincipal Long userId
+    ) {
+        ledgerService.delete(id);
         return ResponseEntity.ok().build();
     }
 }
