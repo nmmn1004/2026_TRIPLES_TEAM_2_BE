@@ -58,16 +58,30 @@ public class AdviceService {
             }
 
             BudgetGoal setGoal = budgetReader.getById(userId);
-
             Map<String, Long> rawSpends = ledgerReader.getMonthlyCategorySumMap(userId);
-
-            Map<String, Long> currentSpends = normalizeKeys(rawSpends);
-            Map<String, Long> spendPercent = calculateSpendPercent(currentSpends, setGoal);
-
             List<MonthlyLedgerDetailResponse> monthlyDetails = ledgerReader.getMonthlyLedgerDetails(userId)
                     .stream()
                     .limit(20)
                     .toList();
+
+            boolean hasNoBudget = setGoal == null ||
+                    (setGoal.getFoodAmount() == 0 && setGoal.getTransportAmount() == 0 &&
+                            setGoal.getLeisureAmount() == 0 && setGoal.getFixedAmount() == 0);
+            boolean hasNoSpends = rawSpends == null || rawSpends.isEmpty() || monthlyDetails.isEmpty();
+
+            if (hasNoBudget || hasNoSpends) {
+                log.info("ℹ️ 데이터 부족으로 AI 분석 스킵 (userId={})", userId);
+
+                return new AdviceMessageResponse(
+                        ResponseStatus.SUCCESS,
+                        ChipmunkStatus.CHIPMUNK_POSITIVE,
+                        "아직 분석할 소비 내역이나 예산이 부족해요. 열심히 가계부를 써보아요! 📝",
+                        Collections.emptyList()
+                );
+            }
+
+            Map<String, Long> currentSpends = normalizeKeys(rawSpends);
+            Map<String, Long> spendPercent = calculateSpendPercent(currentSpends, setGoal);
 
             ObjectMapper mapper = JsonMapper.builder()
                     .addModule(new JavaTimeModule())
@@ -80,8 +94,6 @@ public class AdviceService {
             log.info("🧾 spendPercentJson = {}", spendPercentJson);
             log.info("🧾 currentSpendsJson = {}", currentSpendsJson);
             log.info("🧾 monthlyDetailsJson = {}", monthlyDetailsJson);
-            log.info("🧠 SYSTEM PROMPT = {}", generateAdviceSystemPrompt.getTemplate());
-            log.info("🧠 USER PROMPT = {}", generateAdvicePrompt.getTemplate());
 
             ChipmunkStatus chipmunkStatus = decideChipmunkStatus(spendPercent);
 

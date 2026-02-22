@@ -150,11 +150,4 @@ public class AdviceController {
     ) {
         return ResponseEntity.ok(adviceService.generateAdvice(userId));
     }
-
-    @GetMapping
-    public ResponseEntity<Void> test(
-
-    ) {
-        return ResponseEntity.ok().build();
-    }
 }

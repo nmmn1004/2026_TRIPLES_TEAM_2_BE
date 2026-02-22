@@ -35,13 +35,10 @@ public class LedgerController {
 
     @GetMapping("/list")
     @Operation(summary = "가계부 내역 조회", description = "현재 로그인된 유저의 모든 가계부 내역 불러오기")
-    public ResponseEntity<List<LedgerResponse>> getAllLedgers(
+    public ResponseEntity<List<Ledger>> getAllLedgers(
             @AuthenticationPrincipal Long userId
     ) {
-        List<LedgerResponse> responses = ledgerService.findAllByUserId(userId)
-                .stream()
-                .map(LedgerResponse::new)
-                .collect(Collectors.toList());
+        List<Ledger> responses = ledgerService.findAllByUserId(userId);
 
         return ResponseEntity.ok(responses);
     }
