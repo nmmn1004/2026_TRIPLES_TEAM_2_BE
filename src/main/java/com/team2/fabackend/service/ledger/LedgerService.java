@@ -1,8 +1,8 @@
 package com.team2.fabackend.service.ledger;
 
 import com.team2.fabackend.api.ledger.dto.LedgerRequest;
-import com.team2.fabackend.domain.goals.Goal; // 패키지 경로 확인 필요
-import com.team2.fabackend.domain.goals.GoalRepository; // 패키지 경로 확인 필요
+import com.team2.fabackend.domain.goals.Goal; 
+import com.team2.fabackend.domain.goals.GoalRepository; 
 import com.team2.fabackend.domain.ledger.Ledger;
 import com.team2.fabackend.domain.ledger.LedgerRepository;
 import com.team2.fabackend.domain.ledger.TransactionType;
@@ -20,9 +20,13 @@ public class LedgerService {
     private final LedgerRepository ledgerRepository;
     private final GoalRepository goalRepository;
 
-    // 가계부 내역 저장하기(C)
+    /**
+     * 사용자의 가계부 내역을 저장하고, 지출(EXPENSE) 타입인 경우 연동된 저축 목표에 금액을 반영합니다.
+     * 
+     * @param userId 유저 식별자
+     * @param request 가계부 저장 요청 정보 (금액, 카테고리, 메모, 타입, 일시 등)
+     */
     public void saveLedger(Long userId, LedgerRequest request) {
-        // 1. 내역 저장 (goalId는 엔티티에서 빼거나 null로 처리)
         Ledger ledger = Ledger.builder()
                 .userId(userId)
                 .amount(request.getAmount())
@@ -35,13 +39,17 @@ public class LedgerService {
 
         ledgerRepository.save(ledger);
 
-        // 2. 지출(EXPENSE)인 경우 모든 활성 목표에 자동 반영
         if (request.getType() == TransactionType.EXPENSE) {
             updateRelatedGoals(userId, request);
         }
     }
 
-    // 목표 업데이트 로직 분리 (가독성)
+    /**
+     * 사용자의 활성화된 저축 목표 중 해당 지출 카테고리에 부합하는 목표의 현재 달성 금액을 업데이트합니다.
+     * 
+     * @param userId 유저 식별자
+     * @param request 가계부 지출 정보
+     */
     private void updateRelatedGoals(Long userId, LedgerRequest request) {
         List<Goal> activeGoals = goalRepository.findAllByUserId(userId);
 
@@ -55,19 +63,28 @@ public class LedgerService {
         }
     }
 
-    // 특정 유저의 내역만 가져오기 (전체 조회가 아니라 유저별 조회가 안전합니다)
+    /**
+     * 특정 사용자의 모든 가계부 내역을 조회합니다.
+     * 
+     * @param userId 유저 식별자
+     * @return 해당 사용자의 가계부 내역 리스트
+     */
     @Transactional(readOnly = true)
     public List<Ledger> findAllByUserId(Long userId) {
         return ledgerRepository.findAllByUserId(userId);
     }
 
-    // 수정하기(U) - 수정 시에도 목표 금액이 바뀌어야 하므로 로직이 복잡해질 수 있음 주의!
+    /**
+     * 기존 가계부 내역의 정보를 수정합니다.
+     * 
+     * @param id 수정할 가계부 내역의 식별자
+     * @param request 수정할 가계부 정보
+     */
     @Transactional
     public void update(Long id, LedgerRequest request) {
         Ledger ledger = ledgerRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("해당 내역이 없습니다. id=" + id));
 
-        // 기존 금액과 차액만큼 목표를 수정하는 로직이 추가되면 더 완벽합니다.
         ledger.update(request.getAmount(),
                 request.getCategory(),
                 request.getMemo(),
@@ -76,13 +93,16 @@ public class LedgerService {
                 request.getTime());
     }
 
-    // 지우기(D)
+    /**
+     * 특정 가계부 내역을 삭제합니다.
+     * 
+     * @param id 삭제할 가계부 내역의 식별자
+     */
     @Transactional
     public void delete(Long id) {
         Ledger ledger = ledgerRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("해당 내역이 없습니다. id=" + id));
 
-        // 지울 때도 목표에서 그만큼 금액을 빼주는 로직이 필요할 수 있습니다.
         ledgerRepository.delete(ledger);
     }
 }

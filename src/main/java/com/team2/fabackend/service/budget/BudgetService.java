@@ -19,34 +19,45 @@ public class BudgetService {
     private final BudgetRepository budgetRepository;
     private final UserRepository userRepository;
 
+    /**
+     * 사용자의 설문 기반 예산 요청을 받아 각 카테고리별 예산을 계산하고 저장하거나 업데이트합니다.
+     * 
+     * @param req 예산 설정 요청 DTO (각 카테고리별 옵션 포함)
+     * @param userId 유저 식별자
+     * @return 저장된 예산 목표의 ID
+     */
     @Transactional
     public Long saveBudget(BudgetRequest req, Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("유저를 찾을 수 없습니다."));
 
-        // 1. 각 카테고리별 금액 계산
         long food = calculateFood(req);
         long transport = calculateTransport(req);
         long leisure = calculateLeisure(req);
         long fixed = calculateFixed(req);
-
-        // 2. 저장 or 업데이트
+        
         BudgetGoal budgetGoal = budgetRepository.findByUserId(userId)
                 .map(existing -> {
                     existing.update(food, transport, leisure, fixed);
                     return existing;
                 })
-                .orElse(BudgetGoal.builder()
-                        .user(user)
-                        .foodAmount(food)
-                        .transportAmount(transport)
-                        .leisureAmount(leisure)
-                        .fixedAmount(fixed)
-                        .build());
+                .orElseGet(() -> BudgetGoal.builder()
+                            .user(user)
+                            .foodAmount(food)
+                            .transportAmount(transport)
+                            .leisureAmount(leisure)
+                            .fixedAmount(fixed)
+                            .build());
 
         return budgetRepository.save(budgetGoal).getId();
     }
 
+    /**
+     * 특정 사용자의 예산 목표 정보를 조회합니다.
+     * 
+     * @param userId 유저 식별자
+     * @return 사용자의 예산 목표 응답 DTO
+     */
     public BudgetResponse getBudget(Long userId) {
         BudgetGoal goal = budgetRepository.findByUserId(userId)
                 .orElseThrow(() -> new IllegalArgumentException("설정된 예산 목표가 없습니다. 유저 ID: " + userId));
@@ -54,7 +65,13 @@ public class BudgetService {
         return new BudgetResponse(goal);
     }
 
-    //U
+    /**
+     * 사용자의 예산 카테고리별 금액을 직접 수정합니다.
+     * 
+     * @param userId 유저 식별자
+     * @param req 수정할 금액이 담긴 DTO
+     * @return 수정된 예산 목표의 ID
+     */
     @Transactional
     public Long updateBudgetAmounts(Long userId, BudgetUpdateRequest req) {
         BudgetGoal goal = budgetRepository.findByUserId(userId)
@@ -70,44 +87,61 @@ public class BudgetService {
         return goal.getId();
     }
 
-    //카테고리별 계산 로직
+    /**
+     * 설문 옵션을 기반으로 식비 예산을 계산합니다.
+     * 
+     * @param req 예산 설정 요청 DTO
+     * @return 계산된 식비 예산 총액
+     */
     private long calculateFood(BudgetRequest req) {
-        // 1) 하루 식비
         long daily = switch (req.getFoodDailyOption()) {
             case 1 -> 75000; case 2 -> 225000; case 3 -> 450000; case 4 -> 900000; default -> 0;
         };
-        // 2) 배달비
         long delivery = switch (req.getDeliveryFreqOption()) {
             case 2 -> 88000; case 3 -> 180000; default -> 0;
         };
-        // 3) 카페/디저트
         long dessert = switch (req.getDessertCostOption()) {
             case 1 -> 10000; case 2 -> 30000; case 3 -> 60000; case 4 -> 120000; default -> 0;
         };
         return daily + delivery + dessert;
     }
 
+    /**
+     * 설문 옵션을 기반으로 교통비 예산을 계산합니다.
+     * 
+     * @param req 예산 설정 요청 DTO
+     * @return 계산된 교통비 예산 총액
+     */
     private long calculateTransport(BudgetRequest req) {
-        // 교통비 구간별 평균값 적용
         long base = switch (req.getTransportMonthlyOption()) {
             case 1 -> 15000; case 2 -> 35000; case 3 -> 65000; case 4 -> 100000; default -> 0;
         };
-        // 택시 빈도 가산 (주 1~2회: 월 4만원, 주 3회 이상: 월 10만원 가정)
         long taxi = switch (req.getTaxiFreqOption()) {
             case 2 -> 40000; case 3 -> 100000; default -> 0;
         };
         return base + taxi;
     }
 
+    /**
+     * 설문 옵션을 기반으로 여가비 예산을 계산합니다.
+     * 
+     * @param req 예산 설정 요청 DTO
+     * @return 계산된 여가비 예산 총액
+     */
     private long calculateLeisure(BudgetRequest req) {
         long hobby = switch (req.getHobbyCostOption()) {
             case 1 -> 20000; case 2 -> 40000; case 3 -> 60000; case 4 -> 900000; default -> 0;
         };
-        // 콘텐츠 구독료 (개당 1.2만 원 가정)
         long subscription = (long) req.getContentFreqOption() * 12000;
         return hobby + subscription;
     }
 
+    /**
+     * 설문 옵션을 기반으로 고정 지출 예산을 계산합니다.
+     * 
+     * @param req 예산 설정 요청 DTO
+     * @return 계산된 고정 지출 예산 총액
+     */
     private long calculateFixed(BudgetRequest req) {
         long fixed = switch (req.getFixedMonthlyOption()) {
             case 2 -> 40000; case 3 -> 60000; case 4 -> 100000; default -> 0;

@@ -17,10 +17,21 @@ public class UserTermWriter {
     private final UserTermRepository userTermRepository;
     private final TermRepository termRepository;
 
+    /**
+     * Saves a list of user term agreements.
+     *
+     * @param userTerms The list of UserTerm entities to save.
+     */
     public void saveAll(List<UserTerm> userTerms) {
         userTermRepository.saveAll(userTerms);
     }
 
+    /**
+     * Saves a new term entity.
+     *
+     * @param term The term entity to create.
+     * @return The saved term entity.
+     */
     public Term createTerm(Term term) {
         return termRepository.save(term);
     }

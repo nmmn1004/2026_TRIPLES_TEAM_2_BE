@@ -11,8 +11,21 @@ import java.util.List;
 
 @Repository
 public interface GoalRepository extends JpaRepository<Goal, Long> {
+    /**
+     * Finds all goals associated with a specific user.
+     *
+     * @param userId The ID of the user.
+     * @return A list of goals for the user.
+     */
     List<Goal> findAllByUserId(Long userId);
-    //목표 기간 내 카테고리별 지출 합계 구하는 쿼리
+
+    /**
+     * Retrieves expense statistics by category within a specified date range.
+     *
+     * @param startDate The start date of the range.
+     * @param endDate   The end date of the range.
+     * @return A list of CategoryStatResponse objects.
+     */
     @Query("SELECT new com.team2.fabackend.api.goals.dto.CategoryStatResponse(l.category, SUM(l.amount)) " +
             "FROM Ledger l " +
             "WHERE l.date BETWEEN :startDate AND :endDate " +
@@ -23,6 +36,13 @@ public interface GoalRepository extends JpaRepository<Goal, Long> {
             @Param("endDate") LocalDate endDate
     );
 
+    /**
+     * Calculates the total expense amount between two dates.
+     *
+     * @param startDate The start date of the range.
+     * @param endDate   The end date of the range.
+     * @return The total sum of expenses.
+     */
     @Query("SELECT SUM(l.amount) FROM Ledger l " +
             "WHERE l.date BETWEEN :startDate AND :endDate " +
             "AND l.type = 'EXPENSE'")

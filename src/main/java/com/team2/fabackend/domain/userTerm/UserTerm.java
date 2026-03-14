@@ -39,11 +39,17 @@ public class UserTerm {
     @JoinColumn(name = "term_id")
     private Term term;
 
-//  동의 여부
     private boolean agreed;
-//  동의 날짜
     private LocalDateTime agreedAt;
 
+    /**
+     * Private constructor for Builder use.
+     *
+     * @param user     The user associated with the term.
+     * @param term     The term being agreed to.
+     * @param agreed   The agreement status.
+     * @param agreedAt The timestamp of agreement.
+     */
     @Builder
     private UserTerm(User user, Term term, boolean agreed, LocalDateTime agreedAt) {
         this.user = user;
@@ -52,7 +58,13 @@ public class UserTerm {
         this.agreedAt = agreedAt;
     }
 
-    /** 유저가 약관에 동의 */
+    /**
+     * Creates a new UserTerm record indicating agreement.
+     *
+     * @param user The user agreeing to the term.
+     * @param term The term being agreed to.
+     * @return A new UserTerm instance.
+     */
     public static UserTerm agree(User user, Term term) {
         return UserTerm.builder()
                 .user(user)
@@ -62,6 +74,15 @@ public class UserTerm {
                 .build();
     }
 
+    /**
+     * Processes a list of term IDs and creates new UserTerm records for terms the user has not already agreed to.
+     *
+     * @param user           The user entity.
+     * @param activeTerms    The list of currently active terms.
+     * @param agreedTermIds  The collection of term IDs the user is agreeing to.
+     * @param alreadyAgreed  A set of term IDs the user has already agreed to.
+     * @return A list of new UserTerm objects to be persisted.
+     */
     public static List<UserTerm> agreeNewTerms(
             User user,
             List<Term> activeTerms,

@@ -36,6 +36,14 @@ public class Term extends BaseEntity {
     @Column(nullable = false)
     private boolean required;
 
+    /**
+     * Constructs a new Term with the specified details.
+     *
+     * @param title    The title of the term.
+     * @param content  The detailed content of the term.
+     * @param version  The version string of the term.
+     * @param required Whether the term is mandatory.
+     */
     @Builder
     protected Term(
             String title,
@@ -49,6 +57,14 @@ public class Term extends BaseEntity {
         this.required = required;
     }
 
+    /**
+     * Updates the existing term with new details.
+     *
+     * @param title    The new title.
+     * @param content  The new content.
+     * @param version  The new version.
+     * @param required The new requirement status.
+     */
     public void updateTerm(
             String title,
             String content,

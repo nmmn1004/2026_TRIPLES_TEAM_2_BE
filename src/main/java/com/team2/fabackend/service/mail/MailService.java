@@ -19,7 +19,6 @@ import com.team2.fabackend.service.ledger.LedgerReader;
 import com.team2.fabackend.service.user.UserReader;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.prompt.PromptTemplate;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -31,7 +30,6 @@ import java.util.List;
 import java.util.Map;
 
 @Service
-@Slf4j
 @RequiredArgsConstructor
 public class MailService {
     private final JavaMailSender javaMailSender;
@@ -46,6 +44,13 @@ public class MailService {
     private final PromptTemplate generateAiReportPrompt;
     private final PromptTemplate generateAiReportSystemPrompt;
 
+    /**
+     * Generates an AI report for the user and sends it to the specified receiver email.
+     *
+     * @param userId        The ID of the user.
+     * @param receiverEmail The recipient's email address.
+     * @return An AiReportResponse containing the generated report content.
+     */
     public AiReportResponse sendAiReport(Long userId, String receiverEmail) {
         User user = userReader.findById(userId);
 
@@ -70,10 +75,7 @@ public class MailService {
 
             javaMailSender.send(mimeMessage);
 
-            log.info("메일 발송 성공!");
         } catch (Exception e) {
-            log.info("메일 발송 실패!");
-
             throw new CustomException(ErrorCode.EMAIL_SEND_FAILED);
         }
 
@@ -81,6 +83,12 @@ public class MailService {
     }
 
 
+    /**
+     * Orchestrates the generation of an AI consumption report using LLM and user data.
+     *
+     * @param userId The ID of the user.
+     * @return The generated AI report as a string.
+     */
     private String generateAiReport(Long userId) {
         String userNickName = userReader.findById(userId).getNickName();
 
@@ -131,28 +139,15 @@ public class MailService {
                         .call()
                         .content();
 
-                log.info("✅ AI 리포트 생성 성공 (userId: {}, attempt: {}/{})",
-                        userId, attempt, maxRetries);
-
                 message = message
                         .replaceAll("(?s)```html", "")
                         .replaceAll("```", "")
                         .trim();
 
-                log.info("🧠 SYSTEM PROMPT =====================\n{}", generateAiReportSystemPrompt.getTemplate());
-                log.info("🧠 USER PROMPT =====================\n{}", generateAiReportPrompt.getTemplate());
-                log.info("🧠 PARAM budgetGoalJson = {}", budgetGoalJson);
-                log.info("🧠 PARAM goalsJson = {}", goalsJson);
-                log.info("🧠 PARAM monthlyDetailsJson = {}", monthlyDetailsJson);
-
                 return message;
 
             } catch (Exception e) {
-                log.warn("❌ AI 리포트 생성 실패 (userId: {}, attempt: {}/{}): {}",
-                        userId, attempt, maxRetries, e.getMessage());
-
                 if (attempt == maxRetries) {
-                    log.error("❌ AI 리포트 최종 실패 (userId: {})", userId, e);
                     throw new CustomException(ErrorCode.AI_REPORT_GENERATION_FAILED);
                 }
 

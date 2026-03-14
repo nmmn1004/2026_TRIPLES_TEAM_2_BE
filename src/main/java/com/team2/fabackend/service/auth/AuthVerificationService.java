@@ -11,14 +11,33 @@ import java.time.Duration;
 public class AuthVerificationService {
     private final RedisTemplate<String, String> redisTemplate;
 
+    /**
+     * Generates the Redis key for storing password verification tokens.
+     *
+     * @param userId The ID of the user.
+     * @return The string key for Redis.
+     */
     private String getPasswordKey(Long userId) {
         return "pwd_verify:" + userId;
     }
 
+    /**
+     * Saves a password verification token in Redis with a 10-minute TTL.
+     *
+     * @param userId The ID of the user.
+     * @param token  The verification token.
+     */
     public void saveVerificationToken(Long userId, String token) {
         redisTemplate.opsForValue().set(getPasswordKey(userId), token, Duration.ofMinutes(10));
     }
 
+    /**
+     * Validates the provided verification token against the one stored in Redis.
+     *
+     * @param userId The ID of the user.
+     * @param token  The token to validate.
+     * @throws RuntimeException If the token is missing, invalid, or expired.
+     */
     public void validateVerificationToken(Long userId, String token) {
         String savedToken = redisTemplate.opsForValue().get(getPasswordKey(userId));
 
@@ -27,6 +46,11 @@ public class AuthVerificationService {
         }
     }
 
+    /**
+     * Deletes the password verification token for a user from Redis.
+     *
+     * @param userId The ID of the user.
+     */
     public void deleteVerification(Long userId) {
         redisTemplate.delete(getPasswordKey(userId));
     }

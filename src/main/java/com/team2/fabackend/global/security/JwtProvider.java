@@ -33,6 +33,9 @@ public class JwtProvider {
 
     private SecretKey secretKey;
 
+    /**
+     * Initializes the secret key after dependency injection.
+     */
     @PostConstruct
     private void init() {
         if (secretKeyString.length() < 32) {
@@ -42,6 +45,13 @@ public class JwtProvider {
         this.secretKey = Keys.hmacShaKeyFor(secretKeyString.getBytes(StandardCharsets.UTF_8));
     }
 
+    /**
+     * Creates an access token for a user.
+     *
+     * @param userId   The ID of the user.
+     * @param userType The type/role of the user.
+     * @return The generated access token string.
+     */
     public String createAccessToken(Long userId, UserType userType) {
         return Jwts.builder()
                 .setSubject(userId.toString())
@@ -52,15 +62,27 @@ public class JwtProvider {
                 .compact();
     }
 
+    /**
+     * Creates a refresh token for a user.
+     *
+     * @param userId The ID of the user.
+     * @return The generated refresh token string.
+     */
     public String createRefreshToken(Long userId) {
         return Jwts.builder()
                 .setSubject(userId.toString())
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + refreshTokenValidity))
-                .signWith(secretKey) // SecretKey 사용
+                .signWith(secretKey) 
                 .compact();
     }
 
+    /**
+     * Validates a JWT token.
+     *
+     * @param token The token to validate.
+     * @return True if the token is valid, false otherwise.
+     */
     public boolean validateToken(String token) {
         try {
             Jwts.parser()
@@ -73,6 +95,12 @@ public class JwtProvider {
         }
     }
 
+    /**
+     * Extracts the user ID from a JWT token.
+     *
+     * @param token The token string.
+     * @return The user ID as a Long.
+     */
     public Long getUserIdFromToken(String token) {
         Claims claims = Jwts.parser()
                 .verifyWith(secretKey)
@@ -83,6 +111,12 @@ public class JwtProvider {
         return Long.parseLong(claims.getSubject());
     }
 
+    /**
+     * Generates an Authentication object based on the provided JWT token.
+     *
+     * @param token The token string.
+     * @return An Authentication object.
+     */
     public Authentication getAuthentication(String token) {
         Long userId = getUserIdFromToken(token);
 

@@ -21,6 +21,12 @@ import java.util.stream.Collectors;
 public class LedgerReader {
     private final LedgerRepository ledgerRepository;
 
+    /**
+     * Retrieves a map of monthly category sums for a user.
+     *
+     * @param userId The ID of the user.
+     * @return A map where the key is the category and the value is the total amount.
+     */
     public Map<String, Long> getMonthlyCategorySumMap(Long userId) {
         YearMonth yearMonth = YearMonth.now(ZoneId.of("Asia/Seoul"));
         LocalDate start = yearMonth.atDay(1);
@@ -36,6 +42,12 @@ public class LedgerReader {
                 ));
     }
 
+    /**
+     * Retrieves detailed monthly ledger entries for a user.
+     *
+     * @param userId The ID of the user.
+     * @return A list of detailed monthly ledger entries.
+     */
     public List<MonthlyLedgerDetailResponse> getMonthlyLedgerDetails(Long userId) {
         YearMonth yearMonth = YearMonth.now(ZoneId.of("Asia/Seoul"));
 

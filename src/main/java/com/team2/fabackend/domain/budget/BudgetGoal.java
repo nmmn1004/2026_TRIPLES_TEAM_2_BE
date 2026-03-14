@@ -25,6 +25,15 @@ public class BudgetGoal {
 
     private Long totalAmount;
 
+    /**
+     * Constructs a new BudgetGoal for a user with specified amounts for different categories.
+     *
+     * @param user            The user associated with this budget goal.
+     * @param foodAmount      The budgeted amount for food.
+     * @param transportAmount The budgeted amount for transport.
+     * @param leisureAmount   The budgeted amount for leisure.
+     * @param fixedAmount     The budgeted amount for fixed expenses.
+     */
     @Builder
     public BudgetGoal(User user, Long foodAmount, Long transportAmount, Long leisureAmount, Long fixedAmount) {
         this.user = user;
@@ -35,6 +44,14 @@ public class BudgetGoal {
         this.totalAmount = calculateTotal(foodAmount, transportAmount, leisureAmount, fixedAmount);
     }
 
+    /**
+     * Updates the budget goal with new amounts and recalculates the total.
+     *
+     * @param food      The new food budget amount.
+     * @param transport The new transport budget amount.
+     * @param leisure   The new leisure budget amount.
+     * @param fixed     The new fixed expense budget amount.
+     */
     public void update(Long food, Long transport, Long leisure, Long fixed) {
         this.foodAmount = food;
         this.transportAmount = transport;
@@ -43,6 +60,15 @@ public class BudgetGoal {
         this.totalAmount = calculateTotal(food, transport, leisure, fixed);
     }
 
+    /**
+     * Calculates the total budget amount by summing all category amounts.
+     *
+     * @param food      The food budget amount.
+     * @param transport The transport budget amount.
+     * @param leisure   The leisure budget amount.
+     * @param fixed     The fixed budget amount.
+     * @return The total sum of all budget categories.
+     */
     private Long calculateTotal(Long food, Long transport, Long leisure, Long fixed) {
         return (food != null ? food : 0L) +
                 (transport != null ? transport : 0L) +

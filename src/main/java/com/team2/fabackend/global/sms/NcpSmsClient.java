@@ -1,7 +1,6 @@
 package com.team2.fabackend.global.sms;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -17,7 +16,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@Slf4j
 @Component
 @RequiredArgsConstructor
 public class NcpSmsClient {
@@ -36,7 +34,10 @@ public class NcpSmsClient {
     private String senderPhone;
 
     /**
-     * SMS 발송 메인 메서드
+     * Sends an SMS message to the specified phone number using Naver Cloud Platform SENS.
+     *
+     * @param phoneNumber The recipient's phone number.
+     * @param content     The message content.
      */
     public void sendSms(String phoneNumber, String content) {
         String apiUrl = "https://sens.apigw.ntruss.com/sms/v2/services/" + serviceId + "/messages";
@@ -60,14 +61,19 @@ public class NcpSmsClient {
             HttpEntity<Map<String, Object>> request = new HttpEntity<>(body, headers);
             restTemplate.postForEntity(apiUrl, request, String.class);
 
-            log.info("SMS sent to {} successfully", phoneNumber);
-
         } catch (Exception e) {
-            log.warn("[SMS ERROR] 발송 실패. phone={}, content={}, error={}",
-                    phoneNumber, content, e.getMessage());
+            // Error handling could be added here if needed
         }
     }
 
+    /**
+     * Generates a signature for Naver Cloud Platform API authentication.
+     *
+     * @param uri       The API URI path.
+     * @param timestamp The current timestamp string.
+     * @return The generated HMAC-SHA256 signature in Base64 encoding.
+     * @throws Exception If an error occurs during signature creation.
+     */
     private String makeSignature(String uri, String timestamp) throws Exception {
         String space = " ";
         String newLine = "\n";

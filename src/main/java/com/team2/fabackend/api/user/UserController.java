@@ -14,7 +14,6 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -31,11 +30,10 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-@Slf4j
 @RestController
 @RequestMapping("/users")
 @RequiredArgsConstructor
-@SecurityRequirement(name = "JWT") // 클래스 수준 글로벌 보안 설정
+@SecurityRequirement(name = "JWT")
 @Tag(name = "User", description = """
     ## 유저 관리 API
     사용자 정보 조회, 수정, 비밀번호 변경 및 탈퇴를 제공합니다.
@@ -71,19 +69,36 @@ import org.springframework.web.bind.annotation.RestController;
 public class UserController {
     private final UserService userService;
 
+    /**
+     * Retrieves the information of the currently authenticated user.
+     *
+     * @param userId The ID of the authenticated user.
+     * @return A ResponseEntity containing the user's information.
+     */
     @GetMapping("/me")
     @Operation(summary = "자신 회원 정보 조회", description = "AccessToken으로 사용자 조회")
     public ResponseEntity<UserInfoResponse> getCurrentUser(@AuthenticationPrincipal Long userId) {
-        log.info("Current User ID: {}", userId);
         return ResponseEntity.ok(userService.getUser(userId));
     }
 
+    /**
+     * Retrieves the public profile information of another user.
+     *
+     * @param userId The ID of the user to retrieve.
+     * @return A ResponseEntity containing the user's information.
+     */
     @GetMapping("/{userId}")
     @Operation(summary = "타인 회원 정보 조회", description = "공개 프로필 정보를 조회합니다.")
     public ResponseEntity<UserInfoResponse> getUser(@PathVariable Long userId) {
         return ResponseEntity.ok(userService.getUser(userId));
     }
 
+    /**
+     * Retrieves a paginated list of all users.
+     *
+     * @param pageable Pagination and sorting information.
+     * @return A ResponseEntity containing a page of user information.
+     */
     @GetMapping
     @Operation(summary = "전체 유저 페이징 조회")
     public ResponseEntity<Page<UserInfoResponse>> getAllUsers(
@@ -92,6 +107,13 @@ public class UserController {
         return ResponseEntity.ok(userService.getAllUsers(pageable));
     }
 
+    /**
+     * Verifies the user's current password and issues a short-lived confirmation token in the header.
+     *
+     * @param userId  The ID of the authenticated user.
+     * @param request The password verification request details.
+     * @return A ResponseEntity with the confirmation token in the "X-Password-Confirm-Token" header.
+     */
     @PostMapping("/me/password/verify")
     @Operation(summary = "비밀번호 확인", description = "응답 헤더(X-Password-Confirm-Token)로 인증 토큰을 발급합니다.")
     public ResponseEntity<Void> verify(
@@ -104,6 +126,14 @@ public class UserController {
                 .build();
     }
 
+    /**
+     * Updates the user's profile information. Requires a valid password confirmation token.
+     *
+     * @param userId               The ID of the authenticated user.
+     * @param passwordConfirmToken The confirmation token received from password verification.
+     * @param request              The updated user information.
+     * @return A ResponseEntity with OK status upon success.
+     */
     @PatchMapping("/me")
     @Operation(
             summary = "회원 정보 수정",
@@ -119,6 +149,14 @@ public class UserController {
         return ResponseEntity.ok().build();
     }
 
+    /**
+     * Changes the user's password. Requires a valid password confirmation token.
+     *
+     * @param userId               The ID of the authenticated user.
+     * @param passwordConfirmToken The confirmation token received from password verification.
+     * @param request              The request containing the new password.
+     * @return A ResponseEntity with No Content status upon success.
+     */
     @PatchMapping("/me/password")
     @Operation(
             summary = "비밀번호 변경",
@@ -134,6 +172,14 @@ public class UserController {
         return ResponseEntity.noContent().build();
     }
 
+    /**
+     * Deletes the authenticated user's account. Requires a valid password confirmation token and a reason.
+     *
+     * @param userId               The ID of the authenticated user.
+     * @param passwordConfirmToken The confirmation token received from password verification.
+     * @param request              The user deletion request containing the reason.
+     * @return A ResponseEntity with OK status upon success.
+     */
     @DeleteMapping("/me")
     @Operation(
             summary = "회원 탈퇴",

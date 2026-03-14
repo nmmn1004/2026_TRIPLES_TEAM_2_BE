@@ -32,7 +32,6 @@ public class User extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    //  Account info
     @Column(nullable = false, unique = true)
     private String userId;
     @Column(nullable = false)
@@ -43,7 +42,6 @@ public class User extends BaseEntity {
     @Column(nullable = false, unique = true)
     private String phoneNumber;
 
-    //  User info
     @Column(nullable = false)
     private String name;
     @Column(nullable = false)
@@ -56,6 +54,18 @@ public class User extends BaseEntity {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<UserTerm> userTerms = new ArrayList<>();
 
+    /**
+     * Constructs a new User with the specified details.
+     *
+     * @param userId      The user's ID.
+     * @param password    The user's encoded password.
+     * @param socialType  The social login type.
+     * @param name        The user's real name.
+     * @param nickName    The user's nickname.
+     * @param birth       The user's birth date.
+     * @param phoneNumber The user's phone number.
+     * @param userType    The type of user (e.g., USER, ADMIN).
+     */
     @Builder
     protected User(
             String userId,
@@ -78,6 +88,11 @@ public class User extends BaseEntity {
         this.userType = userType != null ? userType : UserType.USER;
     }
 
+    /**
+     * Updates the user's password.
+     *
+     * @param encodedPassword The new encoded password.
+     */
     public void updatePassword(String encodedPassword) {
         if (encodedPassword == null || encodedPassword.isBlank()) {
             throw new IllegalArgumentException("새로운 비밀번호는 비어 있을 수 없습니다.");
@@ -86,6 +101,11 @@ public class User extends BaseEntity {
         this.password = encodedPassword;
     }
 
+    /**
+     * Updates the user's real name.
+     *
+     * @param name The new name.
+     */
     public void updateName(String name) {
         if (name == null || name.isBlank()) {
             throw new IllegalArgumentException("새로운 이름은 비어 있을 수 없습니다.");
@@ -94,6 +114,11 @@ public class User extends BaseEntity {
         this.name = name;
     }
 
+    /**
+     * Updates the user's nickname.
+     *
+     * @param nickName The new nickname.
+     */
     public void updateNickName(String nickName) {
         if (nickName == null || nickName.isBlank()) {
             throw new IllegalArgumentException("새로운 별명은 비어 있을 수 없습니다.");
@@ -102,6 +127,11 @@ public class User extends BaseEntity {
         this.nickName = nickName;
     }
 
+    /**
+     * Updates the user's birth date.
+     *
+     * @param birth The new birth date.
+     */
     public void updateBirth(LocalDate birth) {
         if (birth == null) {
             throw new IllegalArgumentException("생년월일은 비어 있을 수 없습니다.");

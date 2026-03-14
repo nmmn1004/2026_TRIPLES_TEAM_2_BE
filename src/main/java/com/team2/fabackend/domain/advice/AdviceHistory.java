@@ -34,6 +34,13 @@ public class AdviceHistory {
     @Column(columnDefinition = "TEXT")
     private String adviceMessage;
 
+    /**
+     * Constructs a new AdviceHistory record.
+     *
+     * @param userId        The ID of the user.
+     * @param createdAt     The date the record was created.
+     * @param adviceMessage The advice message content.
+     */
     public AdviceHistory(Long userId, LocalDate createdAt, String adviceMessage) {
         this.userId = userId;
         this.createdAt = createdAt;

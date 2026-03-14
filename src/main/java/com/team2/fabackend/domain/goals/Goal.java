@@ -28,7 +28,7 @@ public class Goal {
     private String category;
 
     @Column(nullable = false)
-    private Long targetAmount; // 목표 금액
+    private Long targetAmount; 
 
     @Builder.Default
     private Long currentAmount = 0L;
@@ -41,8 +41,13 @@ public class Goal {
 
     private String memo;
 
-    private Double dailyAllowance; // 일일 소비 허용치
+    private Double dailyAllowance; 
 
+    /**
+     * Adds an amount to the current accumulated amount for this goal.
+     *
+     * @param amount The amount to add.
+     */
     public void addCurrentAmount(Long amount) {
         if (this.currentAmount == null) {
             this.currentAmount = 0L;
@@ -50,6 +55,16 @@ public class Goal {
         this.currentAmount += amount;
     }
 
+    /**
+     * Updates the goal's information and recalculates the daily allowance.
+     *
+     * @param title        The new title.
+     * @param targetAmount The new target amount.
+     * @param startDate    The new start date.
+     * @param endDate      The new end date.
+     * @param memo         The new memo.
+     * @param category     The new category.
+     */
     public void update(String title, Long targetAmount, LocalDate startDate, LocalDate endDate, String memo, String category) {
         this.title = title;
         this.targetAmount = targetAmount;
@@ -60,9 +75,12 @@ public class Goal {
         calculateDailyAllowance();
     }
 
+    /**
+     * Calculates the daily consumption allowance based on the target amount and the goal's duration.
+     */
     public void calculateDailyAllowance() {
         long days = ChronoUnit.DAYS.between(startDate, endDate);
-        if (days <= 0) days = 1; // 0으로 나누기 방지
+        if (days <= 0) days = 1; 
         this.dailyAllowance = (double) this.targetAmount / days;
     }
 

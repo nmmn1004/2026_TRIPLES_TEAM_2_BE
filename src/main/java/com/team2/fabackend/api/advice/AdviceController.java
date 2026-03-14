@@ -53,6 +53,12 @@ public class AdviceController {
 
     private final AdviceService adviceService;
 
+    /**
+     * Generates or retrieves today's personalized consumption advice for the authenticated user.
+     *
+     * @param userId The ID of the authenticated user.
+     * @return A ResponseEntity containing the advice message and status.
+     */
     @PostMapping("/generate")
     @Operation(
             summary = "맞춤 조언 생성",

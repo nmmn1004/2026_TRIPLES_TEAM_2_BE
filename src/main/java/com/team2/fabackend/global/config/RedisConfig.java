@@ -8,6 +8,12 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 @Configuration
 public class RedisConfig {
+    /**
+     * Configures and provides a RedisTemplate bean for string-based operations.
+     *
+     * @param connectionFactory The RedisConnectionFactory to be used.
+     * @return A configured RedisTemplate instance.
+     */
     @Bean
     public RedisTemplate<String, String> redisTemplate(RedisConnectionFactory connectionFactory) {
         RedisTemplate<String, String> template = new RedisTemplate<>();

@@ -20,14 +20,14 @@ public class Ledger {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private Long amount;      // 금액
-    private String category;  // 카테고리
-    private String memo;      // 메모
+    private Long amount;      
+    private String category;  
+    private String memo;      
 
     @Enumerated(EnumType.STRING)
     private TransactionType type;
 
-    private LocalDate date; // 날짜
+    private LocalDate date; 
     private LocalTime time;
 
     private Long goalId;
@@ -35,6 +35,16 @@ public class Ledger {
     @Column(name = "user_id")
     private Long userId;
 
+    /**
+     * Updates the ledger entry with new information.
+     *
+     * @param amount   The new amount.
+     * @param category The new category.
+     * @param memo     The new memo.
+     * @param type     The new transaction type.
+     * @param date     The new date.
+     * @param time     The new time.
+     */
     public void update(Long amount, String category, String memo, com.team2.fabackend.domain.ledger.TransactionType type, LocalDate date, LocalTime time) {
         this.amount = amount;
         this.category = category;

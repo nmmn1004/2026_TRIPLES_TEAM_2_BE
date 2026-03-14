@@ -13,19 +13,38 @@ import java.time.Duration;
 public class RefreshTokenService {
     private final RedisTemplate<String, String> redisTemplate;
 
+    /**
+     * Generates the Redis key for a user's refresh token.
+     *
+     * @param userId The ID of the user.
+     * @return The string key for Redis.
+     */
     private String getKey(Long userId) {
         return "refresh_token:" + userId;
     }
 
+    /**
+     * Saves the refresh token for a user with a specified TTL.
+     *
+     * @param userId       The ID of the user.
+     * @param refreshToken The refresh token string.
+     * @param ttl          The duration for which the token is valid.
+     */
     public void saveRefreshToken(Long userId, String refreshToken, Duration ttl) {
         try {
             redisTemplate.opsForValue().set(getKey(userId), refreshToken, ttl);
         } catch (Exception e) {
-            // Redis 연결 오류 등 인프라 에러 처리
             throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR);
         }
     }
 
+    /**
+     * Validates the provided refresh token against the one stored in Redis.
+     *
+     * @param userId The ID of the user.
+     * @param token  The token to validate.
+     * @throws CustomException If the token is missing or doesn't match.
+     */
     public void validateRefreshToken(Long userId, String token) {
         String savedToken = redisTemplate.opsForValue().get(getKey(userId));
 
@@ -38,6 +57,11 @@ public class RefreshTokenService {
         }
     }
 
+    /**
+     * Deletes the refresh token for a user from Redis.
+     *
+     * @param userId The ID of the user.
+     */
     public void deleteRefreshToken(Long userId) {
         redisTemplate.delete(getKey(userId));
     }

@@ -11,7 +11,28 @@ import java.util.Set;
 
 @Repository
 public interface UserTermRepository extends JpaRepository<UserTerm, Long> {
+    /**
+     * Finds all terms agreed to by a specific user.
+     *
+     * @param user The user entity.
+     * @return A list of UserTerm entries where agreed is true.
+     */
     List<UserTerm> findByUserAndAgreedTrue(User user);
+
+    /**
+     * Finds all term associations for a specific user.
+     *
+     * @param user The user entity.
+     * @return A list of all UserTerm entries for the user.
+     */
     List<UserTerm> findByUser(User user);
+
+    /**
+     * Checks if a specific term association exists for a user.
+     *
+     * @param user The user entity.
+     * @param term The term entity.
+     * @return True if the association exists, false otherwise.
+     */
     boolean existsByUserAndTerm(User user, Term term);
 }

@@ -29,6 +29,12 @@ public class UserService {
 
     private final PasswordEncoder passwordEncoder;
 
+    /**
+     * 특정 사용자의 상세 정보를 조회합니다.
+     * 
+     * @param id 유저 식별자
+     * @return 사용자의 정보를 담은 응답 DTO
+     */
     @Transactional
     public UserInfoResponse getUser(Long id) {
         User user = userReader.findById(id);
@@ -36,6 +42,12 @@ public class UserService {
         return UserInfoResponse.from(user);
     }
 
+    /**
+     * 전체 사용자 목록을 페이징 처리하여 조회합니다.
+     * 
+     * @param pageable 페이징 정보 (페이지 번호, 사이즈, 정렬 등)
+     * @return 페이징 처리된 사용자 정보 응답
+     */
     @Transactional
     public Page<UserInfoResponse> getAllUsers(Pageable pageable) {
         Page<User> usersPage = userReader.findAllUsers(pageable);
@@ -43,6 +55,14 @@ public class UserService {
         return usersPage.map(UserInfoResponse::from);
     }
 
+    /**
+     * 사용자의 현재 비밀번호가 일치하는지 검증하고, 성공 시 2차 인증용 토큰을 발급합니다.
+     * 발급된 토큰은 정보 수정이나 탈퇴 등 민감한 작업 시 헤더에 포함하여 사용됩니다.
+     * 
+     * @param userId 유저 식별자
+     * @param rawPassword 검증할 평문 비밀번호
+     * @return 발급된 2차 인증용 토큰 (UUID)
+     */
     @Transactional(readOnly = true)
     public String verifyCurrentPassword(Long userId, String rawPassword) {
         User user = userReader.findById(userId);
@@ -57,6 +77,13 @@ public class UserService {
         return confirmToken;
     }
 
+    /**
+     * 2차 인증 토큰 검증 후 사용자의 비밀번호를 새로운 비밀번호로 변경합니다.
+     * 
+     * @param userId 유저 식별자
+     * @param confirmToken 발급받은 2차 인증 토큰
+     * @param newPassword 새로 설정할 비밀번호
+     */
     @Transactional
     public void updatePassword(Long userId, String confirmToken, String newPassword) {
         authVerificationService.validateVerificationToken(userId, confirmToken);
@@ -69,6 +96,13 @@ public class UserService {
         authVerificationService.deleteVerification(userId);
     }
 
+    /**
+     * 2차 인증 토큰 검증 후 사용자의 기본 프로필 정보(이름, 닉네임, 생년월일)를 수정합니다.
+     * 
+     * @param userId 유저 식별자
+     * @param passwordConfirmToken 발급받은 2차 인증 토큰
+     * @param request 수정할 프로필 정보가 담긴 DTO
+     */
     @Transactional
     public void updateProfile(Long userId, String passwordConfirmToken, UserInfoRequest request) {
         authVerificationService.validateVerificationToken(userId, passwordConfirmToken);
@@ -80,6 +114,14 @@ public class UserService {
         authVerificationService.deleteVerification(userId);
     }
 
+    /**
+     * 2차 인증 토큰 검증 후 사용자의 계정을 탈퇴 처리합니다.
+     * 탈퇴 시 사유를 별도로 저장하며, 연관된 리프레시 토큰 등을 정리합니다.
+     * 
+     * @param userId 유저 식별자
+     * @param passwordConfirmToken 발급받은 2차 인증 토큰
+     * @param request 탈퇴 사유 정보가 담긴 DTO
+     */
     @Transactional
     public void deleteUser(Long userId, String passwordConfirmToken, UserDeleteRequest request) {
         authVerificationService.validateVerificationToken(userId, passwordConfirmToken);

@@ -47,6 +47,13 @@ public class AiReportController {
 
     private final MailService mailService;
 
+    /**
+     * Generates an AI-driven consumption report and sends it to the specified receiver's email.
+     *
+     * @param userId  The ID of the authenticated user.
+     * @param request The request containing the receiver's email address.
+     * @return A ResponseEntity containing the result message of the report generation and sending process.
+     */
     @Operation(
             summary = "AI 리포트 메일 발송",
             description = """

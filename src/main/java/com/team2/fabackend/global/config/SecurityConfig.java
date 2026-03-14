@@ -23,6 +23,13 @@ import java.util.List;
 public class SecurityConfig {
     private final JwtProvider jwtProvider;
 
+    /**
+     * Configures the security filter chain, including CSRF, CORS, and endpoint authorization.
+     *
+     * @param http The HttpSecurity object to configure.
+     * @return The configured SecurityFilterChain.
+     * @throws Exception If an error occurs during configuration.
+     */
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
@@ -46,6 +53,11 @@ public class SecurityConfig {
         return http.build();
     }
 
+    /**
+     * Configures CORS settings for the application.
+     *
+     * @return A CorsConfigurationSource providing the CORS configuration.
+     */
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();

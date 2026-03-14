@@ -24,37 +24,55 @@ public class UserTermService {
     private final UserTermReader userTermReader;
     private final UserTermWriter userTermWriter;
 
+    /**
+     * Retrieves the list of currently active terms.
+     *
+     * @return A list of TermInfoResponse objects representing active terms.
+     */
     public List<TermInfoResponse> getActiveTerms() {
         return userTermReader.findActiveTerms().stream()
                 .map(TermInfoResponse::from)
                 .toList();
     }
 
+    /**
+     * Processes term agreement for a user.
+     *
+     * @param userId        The ID of the user agreeing to terms.
+     * @param agreedTermIds The list of IDs of the terms being agreed to.
+     */
     public void agreeTerms(Long userId, List<Long> agreedTermIds) {
         User user = userReader.findById(userId);
 
-        // 1. 현재 유효한 약관 조회
         List<Term> activeTerms = userTermReader.findActiveTerms();
 
-        // 2. 약관 동의 정책 검증
         userTermReader.validateAgreement(activeTerms, agreedTermIds);
 
-        // 3. 이미 동의한 약관 ID 조회
         Set<Long> alreadyAgreed = userTermReader.findAgreedTermIds(user);
 
-        // 4. 신규 동의 약관 생성
         List<UserTerm> newUserTerms =
                 UserTerm.agreeNewTerms(user, activeTerms, agreedTermIds, alreadyAgreed);
 
-        // 5. 저장
         userTermWriter.saveAll(newUserTerms);
     }
 
+    /**
+     * Retrieves the term agreement status for a specific user.
+     *
+     * @param userId The ID of the user.
+     * @return A list of UserTermStatusResponse objects for the user.
+     */
     public List<UserTermStatusResponse> getUserTermStatus(Long userId) {
         User user = userReader.findById(userId);
         return userTermReader.findUserTermStatus(user);
     }
 
+    /**
+     * Creates a new term record.
+     *
+     * @param request The term details to be saved.
+     * @return A TermInfoResponse representing the newly created term.
+     */
     public TermInfoResponse createTerm(TermSaveRequest request) {
         Term term = Term.builder()
                 .title(request.getTitle())
@@ -63,9 +81,17 @@ public class UserTermService {
                 .required(request.isRequired())
                 .build();
 
-        return TermInfoResponse.from(userTermWriter.createTerm(term));
+        Term saved = userTermWriter.createTerm(term);
+        return TermInfoResponse.from(saved);
     }
 
+    /**
+     * Updates an existing term record.
+     *
+     * @param termId  The ID of the term to be updated.
+     * @param request The new term details.
+     * @return A TermInfoResponse representing the updated term.
+     */
     public TermInfoResponse updateTerm(Long termId, TermSaveRequest request) {
         Term term = userTermReader.findById(termId);
 

@@ -7,13 +7,13 @@ import java.util.Map;
 @Getter
 @Builder
 public class PersonalAnalysisResponse {
-    private List<CategoryUsage> categoryUsageList; //카테고리별 통계(M)
-    private Map<String, List<DailyUsage>> categoryWeeklyUsage;//요일별 통계(W)
+    private List<CategoryUsage> categoryUsageList;
+    private Map<String, List<DailyUsage>> categoryWeeklyUsage;
 
-    private int ageGroup;           // 연령대
-    private Long averageAmount;     // 또래 평균 지출액
-    private Long myTotalSpent;      // 나의 이번 달 총 지출액
-    private double consumptionRatio; // 평균 대비 비율 (%)
+    private int ageGroup;           
+    private Long averageAmount;     
+    private Long myTotalSpent;      
+    private double consumptionRatio; 
 
     @Getter
     @AllArgsConstructor

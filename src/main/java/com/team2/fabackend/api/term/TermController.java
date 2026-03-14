@@ -82,6 +82,11 @@ import java.util.List;
 public class TermController {
     private final UserTermService userTermService;
 
+    /**
+     * Retrieves the list of currently active terms.
+     *
+     * @return A ResponseEntity containing the list of active terms.
+     */
     @GetMapping("/active")
     @Operation(
             summary = "현재 유효한 약관 목록 조회",
@@ -129,6 +134,12 @@ public class TermController {
         return ResponseEntity.ok(userTermService.getActiveTerms());
     }
 
+    /**
+     * Retrieves the term agreement status for the currently authenticated user.
+     *
+     * @param userId The ID of the authenticated user.
+     * @return A ResponseEntity containing the list of terms and their agreement status.
+     */
     @GetMapping("/me")
     @Operation(
             summary = "내 약관 동의 현황 조회",
@@ -185,13 +196,19 @@ public class TermController {
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class))
             )
     })
-//    @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<List<UserTermStatusResponse>> getUserTermStatus(
             @AuthenticationPrincipal Long userId
     ) {
         return ResponseEntity.ok(userTermService.getUserTermStatus(userId));
     }
 
+    /**
+     * Processes term agreement for the authenticated user.
+     *
+     * @param userId  The ID of the authenticated user.
+     * @param request The request containing the IDs of agreed terms.
+     * @return A ResponseEntity with OK status.
+     */
     @PostMapping("/agree")
     @Operation(
             summary = "약관 동의 처리",
@@ -212,7 +229,7 @@ public class TermController {
         ### 📦 요청 본문
         ```json
         {
-          "agreedTermIds": 
+          "agreedTermIds": [1, 2, 3]
         }
         ```
         
@@ -225,7 +242,7 @@ public class TermController {
             @ApiResponse(
                     responseCode = "200",
                     description = "약관 동의 처리 성공 (이미 동의한 약관은 무시)",
-                    content = @Content // body 없음
+                    content = @Content
             ),
             @ApiResponse(
                     responseCode = "400",
@@ -256,6 +273,12 @@ public class TermController {
         return ResponseEntity.ok().build();
     }
 
+    /**
+     * Creates a new term record. This operation is restricted to administrators.
+     *
+     * @param request The term details to be saved.
+     * @return A ResponseEntity containing the created term information.
+     */
     @PostMapping
     @Operation(
             summary = "[ADMIN] 약관 생성",
@@ -290,6 +313,13 @@ public class TermController {
         return ResponseEntity.ok(userTermService.createTerm(request));
     }
 
+    /**
+     * Updates an existing term record. This operation is restricted to administrators.
+     *
+     * @param termId  The ID of the term to be updated.
+     * @param request The new term details.
+     * @return A ResponseEntity containing the updated term information.
+     */
     @PatchMapping
     @Operation(
             summary = "[ADMIN] 약관 수정",

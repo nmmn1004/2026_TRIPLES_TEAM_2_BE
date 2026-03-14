@@ -24,25 +24,57 @@ public class UserTermReader {
     private final TermRepository termRepository;
     private final UserTermRepository userTermRepository;
 
+    /**
+     * Finds a term by its ID.
+     *
+     * @param termId The ID of the term.
+     * @return The found term entity.
+     * @throws CustomException If the term is not found.
+     */
     public Term findById(Long termId) {
         return termRepository.findById(termId)
                 .orElseThrow(() -> new CustomException(ErrorCode.INVALID_DATA_VALUE));
     }
 
+    /**
+     * Retrieves all currently active terms.
+     *
+     * @return A list of all active terms.
+     */
     public List<Term> findActiveTerms() {
         return termRepository.findAll();
     }
 
+    /**
+     * Retrieves the IDs of all terms that a user has already agreed to.
+     *
+     * @param user The user entity.
+     * @return A set of agreed term IDs.
+     */
     public Set<Long> findAgreedTermIds(User user) {
         return userTermRepository.findByUserAndAgreedTrue(user).stream()
                 .map(userTerm -> userTerm.getTerm().getId())
                 .collect(Collectors.toSet());
     }
 
+    /**
+     * Retrieves all UserTerm records for a specific user.
+     *
+     * @param user The user entity.
+     * @return A list of UserTerm entities.
+     */
     public List<UserTerm> findUserTerms(User user) {
         return userTermRepository.findByUser(user);
     }
 
+    /**
+     * Validates that the user is agreeing to all required terms and that the IDs provided are valid.
+     *
+     * @param activeTerms    The list of currently active terms.
+     * @param agreedTermIds  The IDs of the terms being agreed to.
+     * @throws IllegalStateException    If a required term is missing.
+     * @throws IllegalArgumentException If an invalid term ID is provided.
+     */
     public void validateAgreement(List<Term> activeTerms, List<Long> agreedTermIds) {
 
         Map<Long, Term> termMap = activeTerms.stream()
@@ -65,9 +97,10 @@ public class UserTermReader {
     }
 
     /**
-     * 유저의 약관 동의 현황 조회
-     * - 현재 유효한 약관 기준
-     * - 동의 여부 포함
+     * Retrieves the term agreement status for a user based on all currently active terms.
+     *
+     * @param user The user entity.
+     * @return A list of UserTermStatusResponse objects for the user.
      */
     public List<UserTermStatusResponse> findUserTermStatus(User user) {
         List<Term> activeTerms = termRepository.findAll();
