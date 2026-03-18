@@ -43,12 +43,12 @@ public class UserTerm {
     private LocalDateTime agreedAt;
 
     /**
-     * Private constructor for Builder use.
+     * Builder 사용을 위한 프라이빗 생성자입니다.
      *
-     * @param user     The user associated with the term.
-     * @param term     The term being agreed to.
-     * @param agreed   The agreement status.
-     * @param agreedAt The timestamp of agreement.
+     * @param user     약관과 연관된 사용자입니다.
+     * @param term     동의 대상 약관입니다.
+     * @param agreed   동의 상태입니다.
+     * @param agreedAt 동의 시간입니다.
      */
     @Builder
     private UserTerm(User user, Term term, boolean agreed, LocalDateTime agreedAt) {
@@ -59,11 +59,11 @@ public class UserTerm {
     }
 
     /**
-     * Creates a new UserTerm record indicating agreement.
+     * 동의를 나타내는 새로운 UserTerm 레코드를 생성합니다.
      *
-     * @param user The user agreeing to the term.
-     * @param term The term being agreed to.
-     * @return A new UserTerm instance.
+     * @param user 약관에 동의하는 사용자입니다.
+     * @param term 동의 대상 약관입니다.
+     * @return 새로운 UserTerm 인스턴스입니다.
      */
     public static UserTerm agree(User user, Term term) {
         return UserTerm.builder()
@@ -75,13 +75,13 @@ public class UserTerm {
     }
 
     /**
-     * Processes a list of term IDs and creates new UserTerm records for terms the user has not already agreed to.
+     * 약관 ID 목록을 처리하고 사용자가 아직 동의하지 않은 약관에 대해 새로운 UserTerm 레코드를 생성합니다.
      *
-     * @param user           The user entity.
-     * @param activeTerms    The list of currently active terms.
-     * @param agreedTermIds  The collection of term IDs the user is agreeing to.
-     * @param alreadyAgreed  A set of term IDs the user has already agreed to.
-     * @return A list of new UserTerm objects to be persisted.
+     * @param user           사용자 엔티티입니다.
+     * @param activeTerms    현재 활성화된 약관 목록입니다.
+     * @param agreedTermIds  사용자가 동의하는 약관 ID 모음입니다.
+     * @param alreadyAgreed  사용자가 이미 동의한 약관 ID 세트입니다.
+     * @return 영속화될 새로운 UserTerm 객체 목록입니다.
      */
     public static List<UserTerm> agreeNewTerms(
             User user,

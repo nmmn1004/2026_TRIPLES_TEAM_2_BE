@@ -8,10 +8,10 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class AiConfig {
     /**
-     * Configures and provides a ChatClient bean using the provided ChatModel.
+     * 제공된 ChatModel을 사용하여 ChatClient 빈을 설정하고 제공합니다.
      *
-     * @param chatModel The ChatModel to be used by the ChatClient.
-     * @return A configured ChatClient instance.
+     * @param chatModel ChatClient에서 사용할 ChatModel.
+     * @return 설정된 ChatClient 인스턴스.
      */
     @Bean
     public ChatClient chatClient(ChatModel chatModel) {

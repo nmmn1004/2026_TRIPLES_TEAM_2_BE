@@ -83,9 +83,9 @@ public class TermController {
     private final UserTermService userTermService;
 
     /**
-     * Retrieves the list of currently active terms.
+     * 현재 활성화된 약관 목록을 조회합니다.
      *
-     * @return A ResponseEntity containing the list of active terms.
+     * @return 활성화된 약관 목록을 포함한 ResponseEntity
      */
     @GetMapping("/active")
     @Operation(
@@ -135,10 +135,10 @@ public class TermController {
     }
 
     /**
-     * Retrieves the term agreement status for the currently authenticated user.
+     * 현재 인증된 사용자의 약관 동의 현황을 조회합니다.
      *
-     * @param userId The ID of the authenticated user.
-     * @return A ResponseEntity containing the list of terms and their agreement status.
+     * @param userId 인증된 사용자의 ID
+     * @return 약관 목록과 동의 현황을 포함한 ResponseEntity
      */
     @GetMapping("/me")
     @Operation(
@@ -203,11 +203,11 @@ public class TermController {
     }
 
     /**
-     * Processes term agreement for the authenticated user.
+     * 인증된 사용자의 약관 동의를 처리합니다.
      *
-     * @param userId  The ID of the authenticated user.
-     * @param request The request containing the IDs of agreed terms.
-     * @return A ResponseEntity with OK status.
+     * @param userId  인증된 사용자의 ID
+     * @param request 동의한 약관 ID 목록을 포함하는 요청 객체
+     * @return 성공 시 200 OK 상태의 ResponseEntity
      */
     @PostMapping("/agree")
     @Operation(
@@ -274,10 +274,10 @@ public class TermController {
     }
 
     /**
-     * Creates a new term record. This operation is restricted to administrators.
+     * 새로운 약관 레코드를 생성합니다. 이 작업은 관리자 권한이 필요합니다.
      *
-     * @param request The term details to be saved.
-     * @return A ResponseEntity containing the created term information.
+     * @param request 저장할 약관 상세 정보
+     * @return 생성된 약관 정보를 포함하는 ResponseEntity
      */
     @PostMapping
     @Operation(
@@ -314,11 +314,11 @@ public class TermController {
     }
 
     /**
-     * Updates an existing term record. This operation is restricted to administrators.
+     * 기존 약관 레코드를 수정합니다. 이 작업은 관리자 권한이 필요합니다.
      *
-     * @param termId  The ID of the term to be updated.
-     * @param request The new term details.
-     * @return A ResponseEntity containing the updated term information.
+     * @param termId  수정할 약관의 ID
+     * @param request 새로운 약관 상세 정보
+     * @return 수정된 약관 정보를 포함하는 ResponseEntity
      */
     @PatchMapping
     @Operation(

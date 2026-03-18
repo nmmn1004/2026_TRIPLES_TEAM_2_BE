@@ -6,10 +6,10 @@ import java.util.Optional;
 
 public interface BudgetRepository extends JpaRepository<BudgetGoal, Long> {
     /**
-     * Finds a budget goal associated with a specific user ID.
+     * 특정 사용자 ID와 연관된 예산 목표를 찾습니다.
      *
-     * @param userId The ID of the user.
-     * @return An Optional containing the BudgetGoal if found.
+     * @param userId 사용자의 ID입니다.
+     * @return 발견된 경우 BudgetGoal을 포함하는 Optional입니다.
      */
     Optional<BudgetGoal> findByUserId(Long userId);
 }

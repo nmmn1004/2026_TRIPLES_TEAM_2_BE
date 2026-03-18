@@ -9,10 +9,10 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 @Configuration
 public class RedisConfig {
     /**
-     * Configures and provides a RedisTemplate bean for string-based operations.
+     * 문자열 기반 작업을 위한 RedisTemplate 빈을 설정하고 제공합니다.
      *
-     * @param connectionFactory The RedisConnectionFactory to be used.
-     * @return A configured RedisTemplate instance.
+     * @param connectionFactory 사용할 RedisConnectionFactory.
+     * @return 설정된 RedisTemplate 인스턴스.
      */
     @Bean
     public RedisTemplate<String, String> redisTemplate(RedisConnectionFactory connectionFactory) {

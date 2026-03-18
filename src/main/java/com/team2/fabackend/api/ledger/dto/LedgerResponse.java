@@ -11,9 +11,9 @@ public class LedgerResponse {
     private String memo;
 
     /**
-     * Constructs a new LedgerResponse object based on the provided Ledger entity.
+     * 제공된 Ledger 엔티티를 기반으로 새로운 LedgerResponse 객체를 생성합니다.
      *
-     * @param ledger The Ledger entity from which to initialize the response.
+     * @param ledger 응답을 초기화할 Ledger 엔티티입니다.
      */
     public LedgerResponse(Ledger ledger) {
         this.id = ledger.getId();

@@ -7,9 +7,9 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class FaBackendApplication {
 
     /**
-     * The main entry point for the FaBackend application.
+     * FaBackend 애플리케이션의 메인 엔트리 포인트입니다.
      *
-     * @param args Command line arguments passed to the application.
+     * @param args 애플리케이션으로 전달된 명령줄 인수입니다.
      */
     public static void main(String[] args) {
         SpringApplication.run(FaBackendApplication.class, args);

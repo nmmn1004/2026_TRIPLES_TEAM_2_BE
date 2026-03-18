@@ -33,17 +33,13 @@ public class User extends BaseEntity {
     private Long id;
 
     @Column(nullable = false, unique = true)
-    private String userId;
+    private String email;
     @Column(nullable = false)
     private String password;
     @Column(nullable = false)
     @Enumerated(value = EnumType.STRING)
     private SocialType socialType;
-    @Column(nullable = false, unique = true)
-    private String phoneNumber;
 
-    @Column(nullable = false)
-    private String name;
     @Column(nullable = false)
     private String nickName;
     @Column(nullable = false)
@@ -55,43 +51,37 @@ public class User extends BaseEntity {
     private List<UserTerm> userTerms = new ArrayList<>();
 
     /**
-     * Constructs a new User with the specified details.
+     * 지정된 세부 정보로 새로운 User를 생성합니다.
      *
-     * @param userId      The user's ID.
-     * @param password    The user's encoded password.
-     * @param socialType  The social login type.
-     * @param name        The user's real name.
-     * @param nickName    The user's nickname.
-     * @param birth       The user's birth date.
-     * @param phoneNumber The user's phone number.
-     * @param userType    The type of user (e.g., USER, ADMIN).
+     * @param email      사용자의 email입니다.
+     * @param password    사용자의 인코딩된 비밀번호입니다.
+     * @param socialType  소셜 로그인 유형입니다.
+     * @param nickName    사용자의 별명입니다.
+     * @param birth       사용자의 생년월일입니다.
+     * @param userType    사용자 유형 (예: USER, ADMIN)입니다.
      */
     @Builder
     protected User(
-            String userId,
+            String email,
             String password,
             SocialType socialType,
 
-            String name,
             String nickName,
             LocalDate birth,
-            String phoneNumber,
             UserType userType
     ) {
-        this.userId = userId;
+        this.email = email;
         this.password = password;
         this.socialType = socialType != null ? socialType : SocialType.LOCAL;
-        this.name = name;
         this.nickName = nickName;
         this.birth = birth;
-        this.phoneNumber = phoneNumber;
         this.userType = userType != null ? userType : UserType.USER;
     }
 
     /**
-     * Updates the user's password.
+     * 사용자의 비밀번호를 업데이트합니다.
      *
-     * @param encodedPassword The new encoded password.
+     * @param encodedPassword 새로운 인코딩된 비밀번호입니다.
      */
     public void updatePassword(String encodedPassword) {
         if (encodedPassword == null || encodedPassword.isBlank()) {
@@ -102,22 +92,9 @@ public class User extends BaseEntity {
     }
 
     /**
-     * Updates the user's real name.
+     * 사용자의 별명을 업데이트합니다.
      *
-     * @param name The new name.
-     */
-    public void updateName(String name) {
-        if (name == null || name.isBlank()) {
-            throw new IllegalArgumentException("새로운 이름은 비어 있을 수 없습니다.");
-        }
-
-        this.name = name;
-    }
-
-    /**
-     * Updates the user's nickname.
-     *
-     * @param nickName The new nickname.
+     * @param nickName 새로운 별명입니다.
      */
     public void updateNickName(String nickName) {
         if (nickName == null || nickName.isBlank()) {
@@ -128,9 +105,9 @@ public class User extends BaseEntity {
     }
 
     /**
-     * Updates the user's birth date.
+     * 사용자의 생년월일을 업데이트합니다.
      *
-     * @param birth The new birth date.
+     * @param birth 새로운 생년월일입니다.
      */
     public void updateBirth(LocalDate birth) {
         if (birth == null) {

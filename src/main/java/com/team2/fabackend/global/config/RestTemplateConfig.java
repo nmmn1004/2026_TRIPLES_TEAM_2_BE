@@ -7,9 +7,9 @@ import org.springframework.web.client.RestTemplate;
 @Configuration
 public class RestTemplateConfig {
     /**
-     * Configures and provides a RestTemplate bean for synchronous HTTP requests.
+     * 동기식 HTTP 요청을 위한 RestTemplate 빈을 설정하고 제공합니다.
      *
-     * @return A new RestTemplate instance.
+     * @return 새로운 RestTemplate 인스턴스.
      */
     @Bean
     public RestTemplate restTemplate() {

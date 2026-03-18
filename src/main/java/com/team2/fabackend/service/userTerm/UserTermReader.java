@@ -25,11 +25,11 @@ public class UserTermReader {
     private final UserTermRepository userTermRepository;
 
     /**
-     * Finds a term by its ID.
+     * ID로 약관을 찾습니다.
      *
-     * @param termId The ID of the term.
-     * @return The found term entity.
-     * @throws CustomException If the term is not found.
+     * @param termId 약관의 ID.
+     * @return 찾은 약관 엔티티.
+     * @throws CustomException 약관을 찾을 수 없는 경우.
      */
     public Term findById(Long termId) {
         return termRepository.findById(termId)
@@ -37,19 +37,19 @@ public class UserTermReader {
     }
 
     /**
-     * Retrieves all currently active terms.
+     * 현재 활성화된 모든 약관을 조회합니다.
      *
-     * @return A list of all active terms.
+     * @return 모든 활성화된 약관 리스트.
      */
     public List<Term> findActiveTerms() {
         return termRepository.findAll();
     }
 
     /**
-     * Retrieves the IDs of all terms that a user has already agreed to.
+     * 사용자가 이미 동의한 모든 약관의 ID를 조회합니다.
      *
-     * @param user The user entity.
-     * @return A set of agreed term IDs.
+     * @param user 사용자 엔티티.
+     * @return 동의한 약관 ID 셋.
      */
     public Set<Long> findAgreedTermIds(User user) {
         return userTermRepository.findByUserAndAgreedTrue(user).stream()
@@ -58,22 +58,22 @@ public class UserTermReader {
     }
 
     /**
-     * Retrieves all UserTerm records for a specific user.
+     * 특정 사용자의 모든 UserTerm 레코드를 조회합니다.
      *
-     * @param user The user entity.
-     * @return A list of UserTerm entities.
+     * @param user 사용자 엔티티.
+     * @return UserTerm 엔티티 리스트.
      */
     public List<UserTerm> findUserTerms(User user) {
         return userTermRepository.findByUser(user);
     }
 
     /**
-     * Validates that the user is agreeing to all required terms and that the IDs provided are valid.
+     * 사용자가 모든 필수 약관에 동의했는지, 제공된 ID가 유효한지 검증합니다.
      *
-     * @param activeTerms    The list of currently active terms.
-     * @param agreedTermIds  The IDs of the terms being agreed to.
-     * @throws IllegalStateException    If a required term is missing.
-     * @throws IllegalArgumentException If an invalid term ID is provided.
+     * @param activeTerms    현재 활성화된 약관 리스트.
+     * @param agreedTermIds  동의할 약관 ID 리스트.
+     * @throws IllegalStateException    필수 약관이 누락된 경우.
+     * @throws IllegalArgumentException 유효하지 않은 약관 ID가 제공된 경우.
      */
     public void validateAgreement(List<Term> activeTerms, List<Long> agreedTermIds) {
 
@@ -97,10 +97,10 @@ public class UserTermReader {
     }
 
     /**
-     * Retrieves the term agreement status for a user based on all currently active terms.
+     * 모든 현재 활성화된 약관을 기반으로 사용자의 약관 동의 상태를 조회합니다.
      *
-     * @param user The user entity.
-     * @return A list of UserTermStatusResponse objects for the user.
+     * @param user 사용자 엔티티.
+     * @return 사용자의 UserTermStatusResponse 객체 리스트.
      */
     public List<UserTermStatusResponse> findUserTermStatus(User user) {
         List<Term> activeTerms = termRepository.findAll();

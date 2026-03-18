@@ -70,10 +70,10 @@ public class UserController {
     private final UserService userService;
 
     /**
-     * Retrieves the information of the currently authenticated user.
+     * 현재 인증된 사용자의 정보를 조회합니다.
      *
-     * @param userId The ID of the authenticated user.
-     * @return A ResponseEntity containing the user's information.
+     * @param userId 인증된 사용자의 ID
+     * @return 사용자의 정보를 포함한 ResponseEntity
      */
     @GetMapping("/me")
     @Operation(summary = "자신 회원 정보 조회", description = "AccessToken으로 사용자 조회")
@@ -82,10 +82,10 @@ public class UserController {
     }
 
     /**
-     * Retrieves the public profile information of another user.
+     * 다른 사용자의 공개 프로필 정보를 조회합니다.
      *
-     * @param userId The ID of the user to retrieve.
-     * @return A ResponseEntity containing the user's information.
+     * @param userId 조회할 사용자의 ID
+     * @return 사용자의 정보를 포함한 ResponseEntity
      */
     @GetMapping("/{userId}")
     @Operation(summary = "타인 회원 정보 조회", description = "공개 프로필 정보를 조회합니다.")
@@ -94,10 +94,10 @@ public class UserController {
     }
 
     /**
-     * Retrieves a paginated list of all users.
+     * 전체 사용자 목록을 페이징하여 조회합니다.
      *
-     * @param pageable Pagination and sorting information.
-     * @return A ResponseEntity containing a page of user information.
+     * @param pageable 페이징 및 정렬 정보
+     * @return 사용자 정보 페이지를 포함한 ResponseEntity
      */
     @GetMapping
     @Operation(summary = "전체 유저 페이징 조회")
@@ -108,11 +108,11 @@ public class UserController {
     }
 
     /**
-     * Verifies the user's current password and issues a short-lived confirmation token in the header.
+     * 사용자의 현재 비밀번호를 검증하고 헤더에 짧은 수명의 확인 토큰을 발급합니다.
      *
-     * @param userId  The ID of the authenticated user.
-     * @param request The password verification request details.
-     * @return A ResponseEntity with the confirmation token in the "X-Password-Confirm-Token" header.
+     * @param userId  인증된 사용자의 ID
+     * @param request 비밀번호 검증 요청 상세 정보
+     * @return "X-Password-Confirm-Token" 헤더에 확인 토큰을 포함한 ResponseEntity
      */
     @PostMapping("/me/password/verify")
     @Operation(summary = "비밀번호 확인", description = "응답 헤더(X-Password-Confirm-Token)로 인증 토큰을 발급합니다.")
@@ -127,12 +127,12 @@ public class UserController {
     }
 
     /**
-     * Updates the user's profile information. Requires a valid password confirmation token.
+     * 사용자의 프로필 정보를 수정합니다. 유효한 비밀번호 확인 토큰이 필요합니다.
      *
-     * @param userId               The ID of the authenticated user.
-     * @param passwordConfirmToken The confirmation token received from password verification.
-     * @param request              The updated user information.
-     * @return A ResponseEntity with OK status upon success.
+     * @param userId               인증된 사용자의 ID
+     * @param passwordConfirmToken 비밀번호 검증으로 발급받은 확인 토큰
+     * @param request              수정된 사용자 정보
+     * @return 성공 시 200 OK 상태의 ResponseEntity
      */
     @PatchMapping("/me")
     @Operation(
@@ -150,12 +150,12 @@ public class UserController {
     }
 
     /**
-     * Changes the user's password. Requires a valid password confirmation token.
+     * 사용자의 비밀번호를 변경합니다. 유효한 비밀번호 확인 토큰이 필요합니다.
      *
-     * @param userId               The ID of the authenticated user.
-     * @param passwordConfirmToken The confirmation token received from password verification.
-     * @param request              The request containing the new password.
-     * @return A ResponseEntity with No Content status upon success.
+     * @param userId               인증된 사용자의 ID
+     * @param passwordConfirmToken 비밀번호 검증으로 발급받은 확인 토큰
+     * @param request              새로운 비밀번호를 포함한 요청 객체
+     * @return 성공 시 204 No Content 상태의 ResponseEntity
      */
     @PatchMapping("/me/password")
     @Operation(
@@ -173,12 +173,12 @@ public class UserController {
     }
 
     /**
-     * Deletes the authenticated user's account. Requires a valid password confirmation token and a reason.
+     * 인증된 사용자의 계정을 삭제합니다. 유효한 비밀번호 확인 토큰과 사유가 필요합니다.
      *
-     * @param userId               The ID of the authenticated user.
-     * @param passwordConfirmToken The confirmation token received from password verification.
-     * @param request              The user deletion request containing the reason.
-     * @return A ResponseEntity with OK status upon success.
+     * @param userId               인증된 사용자의 ID
+     * @param passwordConfirmToken 비밀번호 검증으로 발급받은 확인 토큰
+     * @param request              탈퇴 사유를 포함한 사용자 탈퇴 요청 객체
+     * @return 성공 시 200 OK 상태의 ResponseEntity
      */
     @DeleteMapping("/me")
     @Operation(

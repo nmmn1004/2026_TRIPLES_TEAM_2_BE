@@ -22,10 +22,10 @@ public class LedgerReader {
     private final LedgerRepository ledgerRepository;
 
     /**
-     * Retrieves a map of monthly category sums for a user.
+     * 사용자의 월별 카테고리 합계 맵을 조회합니다.
      *
-     * @param userId The ID of the user.
-     * @return A map where the key is the category and the value is the total amount.
+     * @param userId 사용자의 ID.
+     * @return 키는 카테고리, 값은 총 금액인 맵.
      */
     public Map<String, Long> getMonthlyCategorySumMap(Long userId) {
         YearMonth yearMonth = YearMonth.now(ZoneId.of("Asia/Seoul"));
@@ -43,10 +43,10 @@ public class LedgerReader {
     }
 
     /**
-     * Retrieves detailed monthly ledger entries for a user.
+     * 사용자의 상세 월별 가계부 내역을 조회합니다.
      *
-     * @param userId The ID of the user.
-     * @return A list of detailed monthly ledger entries.
+     * @param userId 사용자의 ID.
+     * @return 상세 월별 가계부 내역 리스트.
      */
     public List<MonthlyLedgerDetailResponse> getMonthlyLedgerDetails(Long userId) {
         YearMonth yearMonth = YearMonth.now(ZoneId.of("Asia/Seoul"));

@@ -21,13 +21,13 @@ public class JwtFilter extends OncePerRequestFilter {
     private final JwtProvider jwtProvider;
 
     /**
-     * Filters incoming requests to validate JWT tokens and set authentication in the security context.
+     * 들어오는 요청을 필터링하여 JWT 토큰을 검증하고 보안 컨텍스트에 인증 정보를 설정합니다.
      *
-     * @param request     The HttpServletRequest object.
-     * @param response    The HttpServletResponse object.
-     * @param filterChain The FilterChain object.
-     * @throws ServletException If a servlet-specific error occurs.
-     * @throws IOException      If an I/O error occurs.
+     * @param request     HttpServletRequest 객체.
+     * @param response    HttpServletResponse 객체.
+     * @param filterChain FilterChain 객체.
+     * @throws ServletException 서블릿 관련 오류가 발생한 경우.
+     * @throws IOException      I/O 오류가 발생한 경우.
      */
     @Override
     protected void doFilterInternal(HttpServletRequest request,
@@ -50,10 +50,10 @@ public class JwtFilter extends OncePerRequestFilter {
     }
 
     /**
-     * Resolves the JWT token from the Authorization header of the request.
+     * 요청의 Authorization 헤더에서 JWT 토큰을 추출합니다.
      *
-     * @param request The HttpServletRequest object.
-     * @return The extracted JWT token, or null if not found or invalid.
+     * @param request HttpServletRequest 객체.
+     * @return 추출된 JWT 토큰, 찾을 수 없거나 유효하지 않은 경우 null.
      */
     private String resolveToken(HttpServletRequest request) {
         String bearerToken = request.getHeader("Authorization");

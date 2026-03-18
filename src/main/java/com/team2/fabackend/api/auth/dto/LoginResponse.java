@@ -8,6 +8,6 @@ import lombok.Getter;
 @AllArgsConstructor
 @Schema(description = "로그인 응답")
 public class LoginResponse {
-    @Schema(description = "Refresh Token")
+    @Schema(description = "리프레시 토큰")
     private String refreshToken;
 }

@@ -25,9 +25,9 @@ public class UserTermService {
     private final UserTermWriter userTermWriter;
 
     /**
-     * Retrieves the list of currently active terms.
+     * 현재 활성화된 약관 리스트를 조회합니다.
      *
-     * @return A list of TermInfoResponse objects representing active terms.
+     * @return 활성화된 약관을 나타내는 TermInfoResponse 객체 리스트.
      */
     public List<TermInfoResponse> getActiveTerms() {
         return userTermReader.findActiveTerms().stream()
@@ -36,10 +36,10 @@ public class UserTermService {
     }
 
     /**
-     * Processes term agreement for a user.
+     * 사용자의 약관 동의를 처리합니다.
      *
-     * @param userId        The ID of the user agreeing to terms.
-     * @param agreedTermIds The list of IDs of the terms being agreed to.
+     * @param userId        약관에 동의하는 사용자의 ID.
+     * @param agreedTermIds 동의한 약관 ID 리스트.
      */
     public void agreeTerms(Long userId, List<Long> agreedTermIds) {
         User user = userReader.findById(userId);
@@ -57,10 +57,10 @@ public class UserTermService {
     }
 
     /**
-     * Retrieves the term agreement status for a specific user.
+     * 특정 사용자의 약관 동의 상태를 조회합니다.
      *
-     * @param userId The ID of the user.
-     * @return A list of UserTermStatusResponse objects for the user.
+     * @param userId 사용자의 ID.
+     * @return 사용자의 UserTermStatusResponse 객체 리스트.
      */
     public List<UserTermStatusResponse> getUserTermStatus(Long userId) {
         User user = userReader.findById(userId);
@@ -68,10 +68,10 @@ public class UserTermService {
     }
 
     /**
-     * Creates a new term record.
+     * 새로운 약관 레코드를 생성합니다.
      *
-     * @param request The term details to be saved.
-     * @return A TermInfoResponse representing the newly created term.
+     * @param request 저장할 약관 상세 정보.
+     * @return 새로 생성된 약관을 나타내는 TermInfoResponse.
      */
     public TermInfoResponse createTerm(TermSaveRequest request) {
         Term term = Term.builder()
@@ -86,11 +86,11 @@ public class UserTermService {
     }
 
     /**
-     * Updates an existing term record.
+     * 기존 약관 레코드를 업데이트합니다.
      *
-     * @param termId  The ID of the term to be updated.
-     * @param request The new term details.
-     * @return A TermInfoResponse representing the updated term.
+     * @param termId  업데이트할 약관의 ID.
+     * @param request 새로운 약관 상세 정보.
+     * @return 업데이트된 약관을 나타내는 TermInfoResponse.
      */
     public TermInfoResponse updateTerm(Long termId, TermSaveRequest request) {
         Term term = userTermReader.findById(termId);

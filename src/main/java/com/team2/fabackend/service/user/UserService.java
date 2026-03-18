@@ -97,7 +97,7 @@ public class UserService {
     }
 
     /**
-     * 2차 인증 토큰 검증 후 사용자의 기본 프로필 정보(이름, 닉네임, 생년월일)를 수정합니다.
+     * 2차 인증 토큰 검증 후 사용자의 기본 프로필 정보(닉네임, 생년월일)를 수정합니다.
      * 
      * @param userId 유저 식별자
      * @param passwordConfirmToken 발급받은 2차 인증 토큰
@@ -109,7 +109,7 @@ public class UserService {
 
         User user = userReader.findById(userId);
 
-        userWriter.updateProfile(user, request.getName(), request.getNickName(), request.getBirth());
+        userWriter.updateProfile(user, request.getNickName(), request.getBirth());
 
         authVerificationService.deleteVerification(userId);
     }

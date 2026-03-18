@@ -28,10 +28,10 @@ public class PromptConfig {
     private Resource aiReportResource;
 
     /**
-     * Creates a PromptTemplate for the advice system prompt.
+     * advice 시스템 프롬프트를 위한 PromptTemplate을 생성합니다.
      *
-     * @return A PromptTemplate instance.
-     * @throws IOException If the resource cannot be read.
+     * @return PromptTemplate 인스턴스.
+     * @throws IOException 리소스를 읽을 수 없는 경우.
      */
     @Bean
     public PromptTemplate generateAdviceSystemPrompt() throws IOException {
@@ -39,10 +39,10 @@ public class PromptConfig {
     }
 
     /**
-     * Creates a PromptTemplate for the advice user prompt.
+     * advice 사용자 프롬프트를 위한 PromptTemplate을 생성합니다.
      *
-     * @return A PromptTemplate instance.
-     * @throws IOException If the resource cannot be read.
+     * @return PromptTemplate 인스턴스.
+     * @throws IOException 리소스를 읽을 수 없는 경우.
      */
     @Bean
     public PromptTemplate generateAdvicePrompt() throws IOException {
@@ -50,10 +50,10 @@ public class PromptConfig {
     }
 
     /**
-     * Creates a PromptTemplate for the AI report system prompt.
+     * AI 리포트 시스템 프롬프트를 위한 PromptTemplate을 생성합니다.
      *
-     * @return A PromptTemplate instance.
-     * @throws IOException If the resource cannot be read.
+     * @return PromptTemplate 인스턴스.
+     * @throws IOException 리소스를 읽을 수 없는 경우.
      */
     @Bean
     public PromptTemplate generateAiReportSystemPrompt() throws IOException {
@@ -61,10 +61,10 @@ public class PromptConfig {
     }
 
     /**
-     * Creates a PromptTemplate for the AI report user prompt.
+     * AI 리포트 사용자 프롬프트를 위한 PromptTemplate을 생성합니다.
      *
-     * @return A PromptTemplate instance.
-     * @throws IOException If the resource cannot be read.
+     * @return PromptTemplate 인스턴스.
+     * @throws IOException 리소스를 읽을 수 없는 경우.
      */
     @Bean
     public PromptTemplate generateAiReportPrompt() throws IOException {
@@ -72,11 +72,11 @@ public class PromptConfig {
     }
 
     /**
-     * Helper method to create a PromptTemplate from a Resource.
+     * Resource로부터 PromptTemplate을 생성하는 헬퍼 메서드입니다.
      *
-     * @param resource The Resource to read.
-     * @return A PromptTemplate containing the resource content.
-     * @throws IOException If the resource cannot be read.
+     * @param resource 읽어올 Resource.
+     * @return 리소스 내용을 포함하는 PromptTemplate.
+     * @throws IOException 리소스를 읽을 수 없는 경우.
      */
     private PromptTemplate createPromptTemplate(Resource resource) throws IOException {
         try (InputStream inputStream = resource.getInputStream()) {

@@ -12,27 +12,27 @@ import java.util.Set;
 @Repository
 public interface UserTermRepository extends JpaRepository<UserTerm, Long> {
     /**
-     * Finds all terms agreed to by a specific user.
+     * 특정 사용자가 동의한 모든 약관을 찾습니다.
      *
-     * @param user The user entity.
-     * @return A list of UserTerm entries where agreed is true.
+     * @param user 사용자 엔티티입니다.
+     * @return agreed가 true인 UserTerm 항목 목록입니다.
      */
     List<UserTerm> findByUserAndAgreedTrue(User user);
 
     /**
-     * Finds all term associations for a specific user.
+     * 특정 사용자에 대한 모든 약관 연관성을 찾습니다.
      *
-     * @param user The user entity.
-     * @return A list of all UserTerm entries for the user.
+     * @param user 사용자 엔티티입니다.
+     * @return 사용자에 대한 모든 UserTerm 항목 목록입니다.
      */
     List<UserTerm> findByUser(User user);
 
     /**
-     * Checks if a specific term association exists for a user.
+     * 특정 약관 연관성이 사용자에게 존재하는지 확인합니다.
      *
-     * @param user The user entity.
-     * @param term The term entity.
-     * @return True if the association exists, false otherwise.
+     * @param user 사용자 엔티티입니다.
+     * @param term 약관 엔티티입니다.
+     * @return 연관성이 존재하면 true, 그렇지 않으면 false입니다.
      */
     boolean existsByUserAndTerm(User user, Term term);
 }

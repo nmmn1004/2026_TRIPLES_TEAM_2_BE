@@ -10,12 +10,12 @@ import java.util.List;
 
 public interface LedgerRepository extends JpaRepository<Ledger, Long> {
     /**
-     * Finds all expense ledger entries for a specific user within a date range.
+     * 날짜 범위 내에서 특정 사용자의 모든 지출 가계부 항목을 찾습니다.
      *
-     * @param userId The ID of the user.
-     * @param start  The start date of the range.
-     * @param end    The end date of the range.
-     * @return A list of expense ledger entries.
+     * @param userId 사용자의 ID입니다.
+     * @param start  범위의 시작 날짜입니다.
+     * @param end    범위의 종료 날짜입니다.
+     * @return 지출 가계부 항목 목록입니다.
      */
     @Query("SELECT l FROM Ledger l " +
             "WHERE l.userId = :userId " +
@@ -26,12 +26,12 @@ public interface LedgerRepository extends JpaRepository<Ledger, Long> {
                                                 @Param("end") LocalDate end);
 
     /**
-     * Calculates the total expense amount for a specific user within a date range.
+     * 날짜 범위 내에서 특정 사용자의 총 지출 금액을 계산합니다.
      *
-     * @param userId The ID of the user.
-     * @param start  The start date of the range.
-     * @param end    The end date of the range.
-     * @return The sum of expense amounts.
+     * @param userId 사용자의 ID입니다.
+     * @param start  범위의 시작 날짜입니다.
+     * @param end    범위의 종료 날짜입니다.
+     * @return 지출 금액의 합계입니다.
      */
     @Query("SELECT SUM(l.amount) FROM Ledger l " +
             "WHERE l.userId = :userId " +
@@ -42,13 +42,13 @@ public interface LedgerRepository extends JpaRepository<Ledger, Long> {
                                  @Param("end") LocalDate end);
 
     /**
-     * Calculates the average expense amount for users within a certain age range during a specific month.
+     * 특정 달 동안 특정 연령대의 사용자에 대한 평균 지출 금액을 계산합니다.
      *
-     * @param startDate  The start of the birth date range for the age group.
-     * @param endDate    The end of the birth date range for the age group.
-     * @param monthStart The start of the month.
-     * @param monthEnd   The end of the month.
-     * @return The average expense amount.
+     * @param startDate  연령대의 생년월일 범위 시작입니다.
+     * @param endDate    연령대의 생년월일 범위 종료입니다.
+     * @param monthStart 해당 월의 시작입니다.
+     * @param monthEnd   해당 월의 종료입니다.
+     * @return 평균 지출 금액입니다.
      */
     @Query("SELECT AVG(l.amount) FROM Ledger l JOIN User u ON l.userId = u.id " +
             "WHERE u.birth BETWEEN :startDate AND :endDate " +
@@ -62,11 +62,11 @@ public interface LedgerRepository extends JpaRepository<Ledger, Long> {
     );
 
     /**
-     * Retrieves expense statistics grouped by category within a date range.
+     * 날짜 범위 내에서 카테고리별로 그룹화된 지출 통계를 검색합니다.
      *
-     * @param startDate The start date of the range.
-     * @param endDate   The end date of the range.
-     * @return A list of CategoryStatResponse objects.
+     * @param startDate 범위의 시작 날짜입니다.
+     * @param endDate   범위의 종료 날짜입니다.
+     * @return CategoryStatResponse 객체 목록입니다.
      */
     @Query("SELECT new com.team2.fabackend.api.goals.dto.CategoryStatResponse(l.category, SUM(l.amount)) " +
             "FROM Ledger l " +
@@ -79,29 +79,29 @@ public interface LedgerRepository extends JpaRepository<Ledger, Long> {
     );
 
     /**
-     * Finds all ledger entries for a specific user.
+     * 특정 사용자의 모든 가계부 항목을 찾습니다.
      *
-     * @param userId The ID of the user.
-     * @return A list of all ledger entries for the user.
+     * @param userId 사용자의 ID입니다.
+     * @return 사용자의 모든 가계부 항목 목록입니다.
      */
     List<Ledger> findAllByUserId(Long userId);
 
     /**
-     * Finds all ledger entries within a specific date range.
+     * 특정 날짜 범위 내의 모든 가계부 항목을 찾습니다.
      *
-     * @param start The start date.
-     * @param end   The end date.
-     * @return A list of ledger entries within the range.
+     * @param start 시작 날짜입니다.
+     * @param end   종료 날짜입니다.
+     * @return 범위 내의 가계부 항목 목록입니다.
      */
     List<Ledger> findByDateBetween(LocalDate start, LocalDate end);
 
     /**
-     * Calculates the sum of expenses per category for a user within a date range.
+     * 날짜 범위 내에서 사용자의 카테고리별 지출 합계를 계산합니다.
      *
-     * @param userId    The ID of the user.
-     * @param startDate The start date of the range.
-     * @param endDate   The end date of the range.
-     * @return A list of MonthlyCategorySumLedger objects.
+     * @param userId    사용자의 ID입니다.
+     * @param startDate 범위의 시작 날짜입니다.
+     * @param endDate   범위의 종료 날짜입니다.
+     * @return MonthlyCategorySumLedger 객체 목록입니다.
      */
     @Query("SELECT new com.team2.fabackend.domain.ledger.MonthlyCategorySumLedger(" +
             "l.category, SUM(l.amount)) " +
@@ -117,12 +117,12 @@ public interface LedgerRepository extends JpaRepository<Ledger, Long> {
     );
 
     /**
-     * Retrieves detailed expense records for a user within a date range, ordered by date and time.
+     * 날짜 범위 내에서 사용자의 상세 지출 기록을 날짜 및 시간순으로 정렬하여 검색합니다.
      *
-     * @param userId    The ID of the user.
-     * @param startDate The start date of the range.
-     * @param endDate   The end date of the range.
-     * @return A list of MonthlyLedgerDetailResponse objects.
+     * @param userId    사용자의 ID입니다.
+     * @param startDate 범위의 시작 날짜입니다.
+     * @param endDate   범위의 종료 날짜입니다.
+     * @return MonthlyLedgerDetailResponse 객체 목록입니다.
      */
     @Query("SELECT new com.team2.fabackend.domain.ledger.MonthlyLedgerDetailResponse(" +
             "l.category, l.amount, l.date, l.time) " +

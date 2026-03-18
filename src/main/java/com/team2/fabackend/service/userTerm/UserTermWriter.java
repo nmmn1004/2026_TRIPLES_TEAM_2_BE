@@ -18,19 +18,19 @@ public class UserTermWriter {
     private final TermRepository termRepository;
 
     /**
-     * Saves a list of user term agreements.
+     * 사용자 약관 동의 리스트를 저장합니다.
      *
-     * @param userTerms The list of UserTerm entities to save.
+     * @param userTerms 저장할 UserTerm 엔티티 리스트.
      */
     public void saveAll(List<UserTerm> userTerms) {
         userTermRepository.saveAll(userTerms);
     }
 
     /**
-     * Saves a new term entity.
+     * 새로운 약관 엔티티를 저장합니다.
      *
-     * @param term The term entity to create.
-     * @return The saved term entity.
+     * @param term 생성할 약관 엔티티.
+     * @return 저장된 약관 엔티티.
      */
     public Term createTerm(Term term) {
         return termRepository.save(term);

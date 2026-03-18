@@ -54,10 +54,10 @@ public class AdviceController {
     private final AdviceService adviceService;
 
     /**
-     * Generates or retrieves today's personalized consumption advice for the authenticated user.
+     * 인증된 사용자를 위한 오늘의 맞춤형 소비 조언을 생성하거나 조회합니다.
      *
-     * @param userId The ID of the authenticated user.
-     * @return A ResponseEntity containing the advice message and status.
+     * @param userId 인증된 사용자의 ID
+     * @return 조언 메시지와 상태를 포함하는 ResponseEntity
      */
     @PostMapping("/generate")
     @Operation(

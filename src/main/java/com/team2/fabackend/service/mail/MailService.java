@@ -45,11 +45,11 @@ public class MailService {
     private final PromptTemplate generateAiReportSystemPrompt;
 
     /**
-     * Generates an AI report for the user and sends it to the specified receiver email.
+     * 사용자를 위한 AI 리포트를 생성하고 지정된 수신자 이메일로 전송합니다.
      *
-     * @param userId        The ID of the user.
-     * @param receiverEmail The recipient's email address.
-     * @return An AiReportResponse containing the generated report content.
+     * @param userId        사용자의 ID.
+     * @param receiverEmail 수신자의 이메일 주소.
+     * @return 생성된 리포트 내용을 포함하는 AiReportResponse.
      */
     public AiReportResponse sendAiReport(Long userId, String receiverEmail) {
         User user = userReader.findById(userId);
@@ -60,34 +60,40 @@ public class MailService {
 
         String message = generateAiReport(userId);
 
-        MimeMessage mimeMessage = javaMailSender.createMimeMessage();
-
-        try {
-            MimeMessageHelper mimeMessageHelper = new MimeMessageHelper(mimeMessage, false, "UTF-8");
-
-            mimeMessageHelper.setFrom("jjj4120@gmail.com");
-
-            mimeMessageHelper.setTo(receiverEmail);
-
-            mimeMessageHelper.setSubject(user.getNickName() + "님의 AI 소비 분석 리포트");
-
-            mimeMessageHelper.setText(message, true);
-
-            javaMailSender.send(mimeMessage);
-
-        } catch (Exception e) {
-            throw new CustomException(ErrorCode.EMAIL_SEND_FAILED);
-        }
+        sendMail(receiverEmail, user.getNickName() + "님의 AI 소비 분석 리포트", message);
 
         return new AiReportResponse(message);
     }
 
+    /**
+     * 지정된 수신자에게 이메일을 전송합니다.
+     *
+     * @param to      수신자 이메일 주소.
+     * @param subject 이메일 제목.
+     * @param content 이메일 본문 (HTML).
+     */
+    public void sendMail(String to, String subject, String content) {
+        MimeMessage mimeMessage = javaMailSender.createMimeMessage();
+
+        try {
+            MimeMessageHelper mimeMessageHelper = new MimeMessageHelper(mimeMessage, false, "UTF-8");
+            mimeMessageHelper.setFrom("jjj4120@gmail.com"); // 발신자 설정 (환경 변수 권장)
+            mimeMessageHelper.setTo(to);
+            mimeMessageHelper.setSubject(subject);
+            mimeMessageHelper.setText(content, true);
+
+            javaMailSender.send(mimeMessage);
+        } catch (Exception e) {
+            throw new CustomException(ErrorCode.EMAIL_SEND_FAILED);
+        }
+    }
+
 
     /**
-     * Orchestrates the generation of an AI consumption report using LLM and user data.
+     * LLM과 사용자 데이터를 사용하여 AI 소비 리포트 생성을 조율합니다.
      *
-     * @param userId The ID of the user.
-     * @return The generated AI report as a string.
+     * @param userId 사용자의 ID.
+     * @return 생성된 AI 리포트 문자열.
      */
     private String generateAiReport(Long userId) {
         String userNickName = userReader.findById(userId).getNickName();

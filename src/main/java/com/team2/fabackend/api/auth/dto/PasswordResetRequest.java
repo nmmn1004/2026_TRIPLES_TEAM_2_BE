@@ -13,9 +13,9 @@ import lombok.NoArgsConstructor;
 @Schema(description = "비밀번호 재설정 요청 객체")
 public class PasswordResetRequest {
 
-    @NotBlank(message = "아이디는 필수 입력값입니다.")
-    @Schema(description = "사용자 아이디(userId)", example = "test")
-    private String userId;
+    @NotBlank(message = "이메일은 필수 입력값입니다.")
+    @Schema(description = "사용자 이메일(email)", example = "test@test.com")
+    private String email;
 
     @NotBlank(message = "전화번호는 필수 입력값입니다.")
 //    @Pattern(regexp = "^010\\d{8}$", message = "올바른 전화번호 형식이 아닙니다.")

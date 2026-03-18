@@ -14,21 +14,21 @@ public class RefreshTokenService {
     private final RedisTemplate<String, String> redisTemplate;
 
     /**
-     * Generates the Redis key for a user's refresh token.
+     * 사용자의 리프레시 토큰을 위한 Redis 키를 생성합니다.
      *
-     * @param userId The ID of the user.
-     * @return The string key for Redis.
+     * @param userId 사용자의 ID.
+     * @return Redis 키 문자열.
      */
     private String getKey(Long userId) {
         return "refresh_token:" + userId;
     }
 
     /**
-     * Saves the refresh token for a user with a specified TTL.
+     * 지정된 만료 시간으로 사용자의 리프레시 토큰을 저장합니다.
      *
-     * @param userId       The ID of the user.
-     * @param refreshToken The refresh token string.
-     * @param ttl          The duration for which the token is valid.
+     * @param userId       사용자의 ID.
+     * @param refreshToken 리프레시 토큰 문자열.
+     * @param ttl          토큰의 유효 기간.
      */
     public void saveRefreshToken(Long userId, String refreshToken, Duration ttl) {
         try {
@@ -39,11 +39,11 @@ public class RefreshTokenService {
     }
 
     /**
-     * Validates the provided refresh token against the one stored in Redis.
+     * 제공된 리프레시 토큰을 Redis에 저장된 토큰과 대조하여 검증합니다.
      *
-     * @param userId The ID of the user.
-     * @param token  The token to validate.
-     * @throws CustomException If the token is missing or doesn't match.
+     * @param userId 사용자의 ID.
+     * @param token  검증할 토큰.
+     * @throws CustomException 토큰이 없거나 일치하지 않는 경우.
      */
     public void validateRefreshToken(Long userId, String token) {
         String savedToken = redisTemplate.opsForValue().get(getKey(userId));
@@ -58,9 +58,9 @@ public class RefreshTokenService {
     }
 
     /**
-     * Deletes the refresh token for a user from Redis.
+     * 사용자의 리프레시 토큰을 Redis에서 삭제합니다.
      *
-     * @param userId The ID of the user.
+     * @param userId 사용자의 ID.
      */
     public void deleteRefreshToken(Long userId) {
         redisTemplate.delete(getKey(userId));

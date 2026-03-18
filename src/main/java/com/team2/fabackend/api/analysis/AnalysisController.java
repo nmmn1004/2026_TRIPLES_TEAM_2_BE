@@ -43,10 +43,10 @@ public class AnalysisController {
     private final AnalysisService analysisService;
 
     /**
-     * Retrieves personal consumption pattern analysis for a specific user.
+     * 특정 사용자의 개인별 소비 패턴 분석 결과를 조회합니다.
      *
-     * @param userId The ID of the user whose consumption pattern is to be analyzed.
-     * @return A PersonalAnalysisResponse containing category usage, weekly usage, and consumption ratio statistics.
+     * @param userId 소비 패턴을 분석할 사용자의 ID.
+     * @return 카테고리별 사용 내역, 주간 사용 내역, 소비 비율 통계가 포함된 PersonalAnalysisResponse.
      */
     @GetMapping("/pattern/{userId}")
     @Operation(

@@ -11,8 +11,7 @@ public enum ErrorCode {
     INVALID_PASSWORD(HttpStatus.UNAUTHORIZED, "U002", "비밀번호가 일치하지 않습니다."), 
     INSUFFICIENT_ADMIN_AUTHORITY(HttpStatus.FORBIDDEN, "U003", "관리자 권한이 필요합니다."),
 
-    DUPLICATE_USER_ID(HttpStatus.CONFLICT, "A001", "이미 가입된 아이디입니다."), 
-    DUPLICATE_PHONE_NUMBER(HttpStatus.CONFLICT, "A002", "이미 가입된 전화번호입니다."), 
+    DUPLICATE_USER_ID(HttpStatus.CONFLICT, "A001", "이미 가입된 이메일입니다."), 
 
     INVALID_REFRESH_TOKEN(HttpStatus.UNAUTHORIZED, "T001", "유효하지 않거나 만료된 리프레시 토큰입니다."),
     REFRESH_TOKEN_EXPIRED(HttpStatus.UNAUTHORIZED, "T001", "리프레시 토큰이 만료되었습니다. 다시 로그인해주세요."),
@@ -26,10 +25,9 @@ public enum ErrorCode {
     INVALID_DATA_VALUE(HttpStatus.BAD_REQUEST, "S003", "해당 값을 찾을 수 없습니다."),
     AI_REPORT_GENERATION_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "S004", "AI 리포트 생성에 실패했습니다."),
 
-    SMS_SEND_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "P001", "SMS 발송에 실패했습니다."),
     EXPIRED_VERIFICATION_CODE(HttpStatus.BAD_REQUEST, "P002", "인증번호가 만료되었습니다."),
     INVALID_VERIFICATION_CODE(HttpStatus.BAD_REQUEST, "P003", "인증번호가 일치하지 않습니다."),
-    PHONE_NOT_VERIFIED(HttpStatus.FORBIDDEN, "P004", "전화번호 인증이 완료되지 않았거나 시간이 초과되었습니다."),
+    EMAIL_NOT_VERIFIED(HttpStatus.FORBIDDEN, "P004", "이메일 인증이 완료되지 않았거나 시간이 초과되었습니다."),
 
     EMAIL_SEND_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "E001", "이메일 발송에 실패하였습니다.");
 

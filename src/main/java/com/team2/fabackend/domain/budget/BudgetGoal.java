@@ -26,13 +26,13 @@ public class BudgetGoal {
     private Long totalAmount;
 
     /**
-     * Constructs a new BudgetGoal for a user with specified amounts for different categories.
+     * 서로 다른 카테고리에 대해 지정된 금액으로 사용자를 위한 새로운 BudgetGoal을 생성합니다.
      *
-     * @param user            The user associated with this budget goal.
-     * @param foodAmount      The budgeted amount for food.
-     * @param transportAmount The budgeted amount for transport.
-     * @param leisureAmount   The budgeted amount for leisure.
-     * @param fixedAmount     The budgeted amount for fixed expenses.
+     * @param user            이 예산 목표와 연관된 사용자입니다.
+     * @param foodAmount      식비에 대한 예산 금액입니다.
+     * @param transportAmount 교통비에 대한 예산 금액입니다.
+     * @param leisureAmount   여가비에 대한 예산 금액입니다.
+     * @param fixedAmount     고정 지출에 대한 예산 금액입니다.
      */
     @Builder
     public BudgetGoal(User user, Long foodAmount, Long transportAmount, Long leisureAmount, Long fixedAmount) {
@@ -45,12 +45,12 @@ public class BudgetGoal {
     }
 
     /**
-     * Updates the budget goal with new amounts and recalculates the total.
+     * 예산 목표를 새로운 금액으로 업데이트하고 총액을 다시 계산합니다.
      *
-     * @param food      The new food budget amount.
-     * @param transport The new transport budget amount.
-     * @param leisure   The new leisure budget amount.
-     * @param fixed     The new fixed expense budget amount.
+     * @param food      새로운 식비 예산 금액입니다.
+     * @param transport 새로운 교통비 예산 금액입니다.
+     * @param leisure   새로운 여가비 예산 금액입니다.
+     * @param fixed     새로운 고정 지출 예산 금액입니다.
      */
     public void update(Long food, Long transport, Long leisure, Long fixed) {
         this.foodAmount = food;
@@ -61,13 +61,13 @@ public class BudgetGoal {
     }
 
     /**
-     * Calculates the total budget amount by summing all category amounts.
+     * 모든 카테고리 금액을 합산하여 총 예산 금액을 계산합니다.
      *
-     * @param food      The food budget amount.
-     * @param transport The transport budget amount.
-     * @param leisure   The leisure budget amount.
-     * @param fixed     The fixed budget amount.
-     * @return The total sum of all budget categories.
+     * @param food      식비 예산 금액입니다.
+     * @param transport 교통비 예산 금액입니다.
+     * @param leisure   여가비 예산 금액입니다.
+     * @param fixed     고정 예산 금액입니다.
+     * @return 모든 예산 카테고리의 총합입니다.
      */
     private Long calculateTotal(Long food, Long transport, Long leisure, Long fixed) {
         return (food != null ? food : 0L) +

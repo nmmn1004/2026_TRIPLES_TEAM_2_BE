@@ -20,18 +20,12 @@ public class UserInfoResponse {
     @Schema(description = "유저 값")
     private Long id;
 
-    @Schema(description = "유저 아이디")
-    private String userId;
+    @Schema(description = "유저 이메일")
+    private String email;
 
     @Schema(description = "유저 소셜 타입")
     @Enumerated(EnumType.STRING)
     private SocialType socialType;
-
-    @Schema(description = "유저 전화번호")
-    private String phoneNumber;
-
-    @Schema(description = "유저 실명")
-    private String name;
 
     @Schema(description = "유저 별명")
     private String nickName;
@@ -45,10 +39,8 @@ public class UserInfoResponse {
     public static UserInfoResponse from(User user) {
         return UserInfoResponse.builder()
                 .id(user.getId())
-                .userId(user.getUserId())
+                .email(user.getEmail())
                 .socialType(user.getSocialType())
-                .phoneNumber(user.getPhoneNumber())
-                .name(user.getName())
                 .nickName(user.getNickName())
                 .birth(user.getBirth())
                 .userType(user.getUserType())

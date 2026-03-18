@@ -10,73 +10,28 @@ import java.util.Optional;
 
 public interface UserRepository extends JpaRepository<User, Long> {
     /**
-     * Finds a user by their user ID and social login type.
+     * 사용자 email과 소셜 로그인 유형으로 사용자를 찾습니다.
      *
-     * @param userId     The user's unique ID.
-     * @param socialType The social login type.
-     * @return An Optional containing the User if found.
+     * @param email      사용자의 email입니다.
+     * @param socialType 소셜 로그인 유형입니다.
+     * @return 발견된 경우 User를 포함하는 Optional입니다.
      */
-    Optional<User> findByUserIdAndSocialType(String userId, SocialType socialType);
+    Optional<User> findByEmailAndSocialType(String email, SocialType socialType);
 
     /**
-     * Retrieves a paged list of all users.
+     * 모든 사용자의 페이지가 지정된 목록을 검색합니다.
      *
-     * @param pageable Pagination information.
-     * @return A Page of User entities.
+     * @param pageable 페이지네이션 정보입니다.
+     * @return User 엔티티의 Page입니다.
      */
     @NotNull Page<User> findAll(@NotNull Pageable pageable);
 
     /**
-     * Checks if a user exists with the given user ID and social login type.
+     * 주어진 사용자 email과 소셜 로그인 유형을 가진 사용자가 존재하는지 확인합니다.
      *
-     * @param userId     The user's unique ID.
-     * @param socialType The social login type.
-     * @return True if the user exists, false otherwise.
+     * @param email      사용자의 email입니다.
+     * @param socialType 소셜 로그인 유형입니다.
+     * @return 사용자가 존재하면 true, 그렇지 않으면 false입니다.
      */
-    boolean existsByUserIdAndSocialType(String userId, SocialType socialType);
-
-    /**
-     * Checks if a user exists with the given phone number.
-     *
-     * @param phoneNumber The phone number to check.
-     * @return True if a user exists with this phone number, false otherwise.
-     */
-    boolean existsByPhoneNumber(String phoneNumber);
-
-    /**
-     * Finds a user by their phone number and social login type.
-     *
-     * @param phoneNumber The phone number.
-     * @param socialType  The social login type.
-     * @return An Optional containing the User if found.
-     */
-    Optional<User> findByPhoneNumberAndSocialType(String phoneNumber, SocialType socialType);
-
-    /**
-     * Checks if a user exists with the given phone number and social login type.
-     *
-     * @param phoneNumber The phone number.
-     * @param socialType  The social login type.
-     * @return True if the user exists, false otherwise.
-     */
-    boolean existsByPhoneNumberAndSocialType(String phoneNumber, SocialType socialType);
-
-    /**
-     * Finds a user by their user ID, phone number, and social login type.
-     *
-     * @param userId      The user's ID.
-     * @param phoneNumber The phone number.
-     * @param socialType  The social login type.
-     * @return An Optional containing the User if found.
-     */
-    Optional<User> findByUserIdAndPhoneNumberAndSocialType(String userId, String phoneNumber, SocialType socialType);
-
-    /**
-     * Finds a user by their user ID and phone number.
-     *
-     * @param userId      The user's ID.
-     * @param phoneNumber The phone number.
-     * @return An Optional containing the User if found.
-     */
-    Optional<User> findByUserIdAndPhoneNumber(String userId, String phoneNumber);
+    boolean existsByEmailAndSocialType(String email, SocialType socialType);
 }

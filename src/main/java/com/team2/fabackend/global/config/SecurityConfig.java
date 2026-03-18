@@ -24,11 +24,11 @@ public class SecurityConfig {
     private final JwtProvider jwtProvider;
 
     /**
-     * Configures the security filter chain, including CSRF, CORS, and endpoint authorization.
+     * CSRF, CORS 및 엔드포인트 권한 부여를 포함한 보안 필터 체인을 설정합니다.
      *
-     * @param http The HttpSecurity object to configure.
-     * @return The configured SecurityFilterChain.
-     * @throws Exception If an error occurs during configuration.
+     * @param http 설정할 HttpSecurity 객체.
+     * @return 설정된 SecurityFilterChain.
+     * @throws Exception 설정 중 오류가 발생한 경우.
      */
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -54,9 +54,9 @@ public class SecurityConfig {
     }
 
     /**
-     * Configures CORS settings for the application.
+     * 애플리케이션의 CORS 설정을 구성합니다.
      *
-     * @return A CorsConfigurationSource providing the CORS configuration.
+     * @return CORS 설정을 제공하는 CorsConfigurationSource.
      */
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {

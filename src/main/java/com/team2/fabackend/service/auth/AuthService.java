@@ -1,15 +1,16 @@
 package com.team2.fabackend.service.auth;
 
 import com.team2.fabackend.api.auth.dto.LoginRequest;
-import com.team2.fabackend.api.auth.dto.PasswordResetRequest;
 import com.team2.fabackend.api.auth.dto.SignupRequest;
 import com.team2.fabackend.api.auth.dto.TokenPair;
+import com.team2.fabackend.api.email.dto.EmailVerifyRequest;
 import com.team2.fabackend.domain.user.User;
 import com.team2.fabackend.global.enums.ErrorCode;
 import com.team2.fabackend.global.enums.SocialType;
 import com.team2.fabackend.global.exception.CustomException;
 import com.team2.fabackend.global.security.JwtProvider;
-import com.team2.fabackend.service.phoneVerification.PhoneVerificationService;
+import com.team2.fabackend.service.mail.MailService;
+import com.team2.fabackend.service.phoneVerification.EmailVerificationService;
 import com.team2.fabackend.service.user.UserReader;
 import com.team2.fabackend.service.user.UserWriter;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -25,7 +27,8 @@ import java.time.Duration;
 public class AuthService {
     private final UserReader userReader;
     private final UserWriter userWriter;
-    private final PhoneVerificationService phoneVerificationService;
+    private final EmailVerificationService emailVerificationService;
+    private final MailService mailService;
 
     private final PasswordEncoder passwordEncoder;
     private final JwtProvider jwtProvider;
@@ -34,57 +37,52 @@ public class AuthService {
     private final Duration REFRESH_TOKEN_TTL = Duration.ofDays(7);
 
     /**
-     * 전화번호 인증 확인 후 신규 사용자를 등록합니다.
-     * 중복된 아이디나 전화번호가 있는지 사전에 검증합니다.
+     * 이메일 인증 확인 후 신규 사용자를 등록합니다.
+     * 중복된 이메일이 있는지 사전에 검증합니다.
      * 
-     * @param request 회원가입 요청 정보 (아이디, 비밀번호, 닉네임, 생년월일, 전화번호 등)
+     * @param request 회원가입 요청 정보 (이메일, 비밀번호, 닉네임, 생년월일 등)
      */
     @Transactional
     public void signup(SignupRequest request) {
-        phoneVerificationService.checkVerified(request.getPhoneNumber());
+        emailVerificationService.checkVerified(request.getEmail());
 
-        if (userReader.existsByUserId(request.getUserId())) {
+        if (userReader.existsByEmail(request.getEmail())) {
             throw new CustomException(ErrorCode.DUPLICATE_USER_ID);
-        }
-        if (userReader.existsByPhoneNumber(request.getPhoneNumber())) {
-            throw new CustomException(ErrorCode.DUPLICATE_PHONE_NUMBER);
         }
 
         User user = User.builder()
-                .userId(request.getUserId())
+                .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
                 .socialType(SocialType.LOCAL)
-                .name(request.getName())
                 .nickName(request.getNickName())
                 .birth(request.getBirth())
-                .phoneNumber(request.getPhoneNumber())
                 .build();
 
         userWriter.create(user);
-        phoneVerificationService.clearVerificationLog(request.getPhoneNumber());
+        emailVerificationService.clearVerificationLog(request.getEmail());
     }
 
     /**
-     * 입력된 아이디의 중복 여부를 확인합니다.
+     * 입력된 이메일의 중복 여부를 확인합니다.
      * 
-     * @param userId 중복 체크할 아이디
+     * @param email 중복 체크할 이메일
      */
     @Transactional(readOnly = true)
-    public void checkUserIdDuplication(String userId) {
-        if (userReader.existsByUserId(userId)) {
+    public void checkEmailDuplication(String email) {
+        if (userReader.existsByEmail(email)) {
             throw new CustomException(ErrorCode.DUPLICATE_USER_ID);
         }
     }
 
     /**
-     * 사용자의 아이디와 비밀번호를 검증하여 로그인을 처리하고 토큰 쌍을 발급합니다.
+     * 사용자의 이메일과 비밀번호를 검증하여 로그인을 처리하고 토큰 쌍을 발급합니다.
      * 
-     * @param request 로그인 요청 정보 (아이디, 비밀번호)
+     * @param request 로그인 요청 정보 (이메일, 비밀번호)
      * @return 발급된 Access Token과 Refresh Token 쌍
      */
     @Transactional
     public TokenPair login(LoginRequest request) {
-        User user = userReader.findByUserIdAndSocialType(request.getUserId(), SocialType.LOCAL);
+        User user = userReader.findByEmailAndSocialType(request.getEmail(), SocialType.LOCAL);
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
             throw new CustomException(ErrorCode.INVALID_PASSWORD);
@@ -130,34 +128,22 @@ public class AuthService {
     }
 
     /**
-     * 인증된 전화번호를 통해 해당 사용자의 마스킹된 아이디를 찾습니다.
+     * 이메일 인증 확인 후 임시 비밀번호를 생성하여 발송합니다.
      * 
-     * @param phoneNumber 인증된 사용자의 전화번호
-     * @return 마스킹 처리된 아이디
-     */
-    public String findUserId(String phoneNumber) {
-        phoneVerificationService.checkVerified(phoneNumber);
-
-        User user = userReader.findGeneralUserByPhone(phoneNumber);
-
-        phoneVerificationService.clearVerificationLog(phoneNumber);
-
-        return maskUserId(user.getUserId());
-    }
-
-    /**
-     * 인증된 전화번호와 아이디를 확인한 후 사용자의 비밀번호를 재설정합니다.
-     * 
-     * @param request 비밀번호 재설정 요청 정보 (아이디, 전화번호, 새 비밀번호)
+     * @param request 이메일 및 인증번호 정보
      */
     @Transactional
-    public void resetPassword(PasswordResetRequest request) {
-        phoneVerificationService.checkVerified(request.getPhoneNumber());
-
-        User user = userReader.findGeneralUserByIdAndPhone(request.getUserId(), request.getPhoneNumber());
-
-        userWriter.updatePassword(user, passwordEncoder.encode(request.getNewPassword()));
-        phoneVerificationService.clearVerificationLog(request.getPhoneNumber());
+    public void sendTemporaryPassword(EmailVerifyRequest request) {
+        emailVerificationService.verifyCode(request.getEmail(), request.getCode());
+        
+        User user = userReader.findByEmailAndSocialType(request.getEmail(), SocialType.LOCAL);
+        
+        String tempPassword = UUID.randomUUID().toString().substring(0, 8);
+        userWriter.updatePassword(user, passwordEncoder.encode(tempPassword));
+        
+        mailService.sendMail(user.getEmail(), "[서비스명] 임시 비밀번호 안내", "임시 비밀번호는 [" + tempPassword + "] 입니다. 로그인 후 반드시 비밀번호를 변경해주세요.");
+        
+        emailVerificationService.clearVerificationLog(request.getEmail());
     }
 
     /**
@@ -168,17 +154,5 @@ public class AuthService {
     @Transactional
     public void logout(Long userId) {
         refreshTokenService.deleteRefreshToken(userId);
-    }
-
-    /**
-     * 사용자 아이디의 뒷부분을 마스킹 처리합니다.
-     * 
-     * @param userId 원본 아이디
-     * @return 마스킹된 아이디
-     */
-    private String maskUserId(String userId) {
-        if (userId.length() <= 3) return userId.substring(0, 1) + "**";
-
-        return userId.substring(0, userId.length() - 3) + "***";
     }
 }

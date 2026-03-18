@@ -18,7 +18,7 @@ public abstract class BaseEntity {
     protected LocalDateTime updatedAt;
 
     /**
-     * Sets the creation and update timestamps before the entity is persisted.
+     * 엔티티가 영속화되기 전에 생성 및 수정 타임스탬프를 설정합니다.
      */
     @PrePersist
     protected void onCreate() {
@@ -27,7 +27,7 @@ public abstract class BaseEntity {
     }
 
     /**
-     * Updates the update timestamp before the entity is updated.
+     * 엔티티가 수정되기 전에 수정 타임스탬프를 업데이트합니다.
      */
     @PreUpdate
     protected void onUpdate() {

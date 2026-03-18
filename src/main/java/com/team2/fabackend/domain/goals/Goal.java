@@ -44,9 +44,9 @@ public class Goal {
     private Double dailyAllowance; 
 
     /**
-     * Adds an amount to the current accumulated amount for this goal.
+     * 이 목표에 대해 현재 누적된 금액에 금액을 추가합니다.
      *
-     * @param amount The amount to add.
+     * @param amount 추가할 금액입니다.
      */
     public void addCurrentAmount(Long amount) {
         if (this.currentAmount == null) {
@@ -56,14 +56,14 @@ public class Goal {
     }
 
     /**
-     * Updates the goal's information and recalculates the daily allowance.
+     * 목표 정보를 업데이트하고 일일 허용치를 다시 계산합니다.
      *
-     * @param title        The new title.
-     * @param targetAmount The new target amount.
-     * @param startDate    The new start date.
-     * @param endDate      The new end date.
-     * @param memo         The new memo.
-     * @param category     The new category.
+     * @param title        새로운 제목입니다.
+     * @param targetAmount 새로운 목표 금액입니다.
+     * @param startDate    새로운 시작 날짜입니다.
+     * @param endDate      새로운 종료 날짜입니다.
+     * @param memo         새로운 메모입니다.
+     * @param category     새로운 카테고리입니다.
      */
     public void update(String title, Long targetAmount, LocalDate startDate, LocalDate endDate, String memo, String category) {
         this.title = title;
@@ -76,7 +76,7 @@ public class Goal {
     }
 
     /**
-     * Calculates the daily consumption allowance based on the target amount and the goal's duration.
+     * 목표 금액과 목표 기간을 기준으로 일일 소비 허용치를 계산합니다.
      */
     public void calculateDailyAllowance() {
         long days = ChronoUnit.DAYS.between(startDate, endDate);

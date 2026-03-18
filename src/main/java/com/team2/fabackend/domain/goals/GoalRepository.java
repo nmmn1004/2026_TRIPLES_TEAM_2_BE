@@ -12,19 +12,19 @@ import java.util.List;
 @Repository
 public interface GoalRepository extends JpaRepository<Goal, Long> {
     /**
-     * Finds all goals associated with a specific user.
+     * 특정 사용자와 연관된 모든 목표를 찾습니다.
      *
-     * @param userId The ID of the user.
-     * @return A list of goals for the user.
+     * @param userId 사용자의 ID입니다.
+     * @return 사용자의 목표 목록입니다.
      */
     List<Goal> findAllByUserId(Long userId);
 
     /**
-     * Retrieves expense statistics by category within a specified date range.
+     * 지정된 날짜 범위 내에서 카테고리별 지출 통계를 검색합니다.
      *
-     * @param startDate The start date of the range.
-     * @param endDate   The end date of the range.
-     * @return A list of CategoryStatResponse objects.
+     * @param startDate 범위의 시작 날짜입니다.
+     * @param endDate   범위의 종료 날짜입니다.
+     * @return CategoryStatResponse 객체 목록입니다.
      */
     @Query("SELECT new com.team2.fabackend.api.goals.dto.CategoryStatResponse(l.category, SUM(l.amount)) " +
             "FROM Ledger l " +
@@ -37,11 +37,11 @@ public interface GoalRepository extends JpaRepository<Goal, Long> {
     );
 
     /**
-     * Calculates the total expense amount between two dates.
+     * 두 날짜 사이의 총 지출 금액을 계산합니다.
      *
-     * @param startDate The start date of the range.
-     * @param endDate   The end date of the range.
-     * @return The total sum of expenses.
+     * @param startDate 범위의 시작 날짜입니다.
+     * @param endDate   범위의 종료 날짜입니다.
+     * @return 지출의 총합입니다.
      */
     @Query("SELECT SUM(l.amount) FROM Ledger l " +
             "WHERE l.date BETWEEN :startDate AND :endDate " +

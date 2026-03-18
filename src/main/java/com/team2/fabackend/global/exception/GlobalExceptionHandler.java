@@ -10,10 +10,10 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
     /**
-     * Handles CustomException and returns an ErrorResponse with the appropriate status code.
+     * CustomException을 처리하고 적절한 상태 코드와 함께 ErrorResponse를 반환합니다.
      *
-     * @param e The CustomException instance.
-     * @return A ResponseEntity containing the ErrorResponse.
+     * @param e CustomException 인스턴스.
+     * @return ErrorResponse를 포함하는 ResponseEntity.
      */
     @ExceptionHandler(CustomException.class)
     public ResponseEntity<ErrorResponse> handleCustomException(CustomException e) {
@@ -23,10 +23,10 @@ public class GlobalExceptionHandler {
     }
 
     /**
-     * Handles all unhandled exceptions and returns a generic internal server error response.
+     * 처리되지 않은 모든 예외를 처리하고 일반적인 내부 서버 오류 응답을 반환합니다.
      *
-     * @param e The exception instance.
-     * @return A ResponseEntity containing a generic ErrorResponse.
+     * @param e 예외 인스턴스.
+     * @return 일반적인 ErrorResponse를 포함하는 ResponseEntity.
      */
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleAllException(Exception e) {

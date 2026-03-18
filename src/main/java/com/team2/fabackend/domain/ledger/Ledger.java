@@ -36,14 +36,14 @@ public class Ledger {
     private Long userId;
 
     /**
-     * Updates the ledger entry with new information.
+     * 가계부 항목을 새로운 정보로 업데이트합니다.
      *
-     * @param amount   The new amount.
-     * @param category The new category.
-     * @param memo     The new memo.
-     * @param type     The new transaction type.
-     * @param date     The new date.
-     * @param time     The new time.
+     * @param amount   새로운 금액입니다.
+     * @param category 새로운 카테고리입니다.
+     * @param memo     새로운 메모입니다.
+     * @param type     새로운 거래 유형입니다.
+     * @param date     새로운 날짜입니다.
+     * @param time     새로운 시간입니다.
      */
     public void update(Long amount, String category, String memo, com.team2.fabackend.domain.ledger.TransactionType type, LocalDate date, LocalTime time) {
         this.amount = amount;

@@ -58,11 +58,11 @@ public class LedgerController {
     private final LedgerService ledgerService;
 
     /**
-     * Saves a new ledger entry for the authenticated user and automatically reflects it in relevant goals.
+     * 인증된 사용자의 새로운 가계부 내역을 저장하고 관련 목표에 자동으로 반영합니다.
      *
-     * @param userId  The ID of the authenticated user.
-     * @param request The ledger entry details to be saved.
-     * @return A ResponseEntity with OK status upon successful save.
+     * @param userId  인증된 사용자의 ID.
+     * @param request 저장할 가계부 내역 상세 정보.
+     * @return 저장 성공 시 OK 상태를 포함하는 ResponseEntity.
      */
     @PostMapping("/add")
     @Operation(summary = "가계부 내역 저장", description = "로그인된 유저의 가계부 내역을 저장하고 관련 목표에 자동 반영합니다.")
@@ -78,10 +78,10 @@ public class LedgerController {
     }
 
     /**
-     * Retrieves all ledger entries for the authenticated user.
+     * 인증된 사용자의 모든 가계부 내역을 조회합니다.
      *
-     * @param userId The ID of the authenticated user.
-     * @return A ResponseEntity containing the list of ledger entries for the user.
+     * @param userId 인증된 사용자의 ID.
+     * @return 사용자의 가계부 내역 목록을 포함하는 ResponseEntity.
      */
     @GetMapping("/list")
     @Operation(summary = "가계부 내역 조회", description = "현재 로그인된 유저의 모든 가계부 내역을 조회합니다.")
@@ -93,12 +93,12 @@ public class LedgerController {
     }
 
     /**
-     * Updates an existing ledger entry by its ID and reflects changes in linked goals.
+     * ID를 통해 기존 가계부 내역을 수정하고 연결된 목표에 변경 사항을 반영합니다.
      *
-     * @param id      The ID of the ledger entry to update.
-     * @param userId  The ID of the authenticated user.
-     * @param request The updated ledger entry details.
-     * @return A ResponseEntity with OK status upon successful update.
+     * @param id      수정할 가계부 내역의 ID.
+     * @param userId  인증된 사용자의 ID.
+     * @param request 수정된 가계부 내역 상세 정보.
+     * @return 수정 성공 시 OK 상태를 포함하는 ResponseEntity.
      */
     @PatchMapping("/{id}")
     @Operation(summary = "가계부 내역 수정", description = "특정 ID의 가계부 내역을 수정합니다. 수정된 금액은 연동된 목표에도 반영됩니다.")
@@ -116,11 +116,11 @@ public class LedgerController {
     }
 
     /**
-     * Deletes a specific ledger entry by its ID and adjusts relevant goal amounts accordingly.
+     * ID를 통해 특정 가계부 내역을 삭제하고 관련 목표 금액을 그에 맞춰 조정합니다.
      *
-     * @param id     The ID of the ledger entry to delete.
-     * @param userId The ID of the authenticated user.
-     * @return A ResponseEntity with OK status upon successful deletion.
+     * @param id     삭제할 가계부 내역의 ID.
+     * @param userId 인증된 사용자의 ID.
+     * @return 삭제 성공 시 OK 상태를 포함하는 ResponseEntity.
      */
     @DeleteMapping("/{id}")
     @Operation(summary = "가계부 내역 삭제", description = "특정 ID의 가계부 내역을 삭제합니다. 삭제된 금액만큼 연동된 목표 금액이 차감됩니다.")
