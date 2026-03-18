@@ -33,12 +33,9 @@ public class UserWriter {
         user.updatePassword(encodedPassword);
     }
 
-    public void updateProfile(User user, String name, String nickName, LocalDate birth) {
+    public void updateProfile(User user, String nickName, LocalDate birth) {
         validateUserNotNull(user);
 
-        if (hasText(name)) {
-            user.updateName(name);
-        }
         if (hasText(nickName)) {
             user.updateNickName(nickName);
         }

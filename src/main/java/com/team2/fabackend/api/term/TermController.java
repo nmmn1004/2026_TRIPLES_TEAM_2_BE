@@ -82,6 +82,11 @@ import java.util.List;
 public class TermController {
     private final UserTermService userTermService;
 
+    /**
+     * 현재 활성화된 약관 목록을 조회합니다.
+     *
+     * @return 활성화된 약관 목록을 포함한 ResponseEntity
+     */
     @GetMapping("/active")
     @Operation(
             summary = "현재 유효한 약관 목록 조회",
@@ -129,6 +134,12 @@ public class TermController {
         return ResponseEntity.ok(userTermService.getActiveTerms());
     }
 
+    /**
+     * 현재 인증된 사용자의 약관 동의 현황을 조회합니다.
+     *
+     * @param userId 인증된 사용자의 ID
+     * @return 약관 목록과 동의 현황을 포함한 ResponseEntity
+     */
     @GetMapping("/me")
     @Operation(
             summary = "내 약관 동의 현황 조회",
@@ -185,13 +196,19 @@ public class TermController {
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class))
             )
     })
-//    @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<List<UserTermStatusResponse>> getUserTermStatus(
             @AuthenticationPrincipal Long userId
     ) {
         return ResponseEntity.ok(userTermService.getUserTermStatus(userId));
     }
 
+    /**
+     * 인증된 사용자의 약관 동의를 처리합니다.
+     *
+     * @param userId  인증된 사용자의 ID
+     * @param request 동의한 약관 ID 목록을 포함하는 요청 객체
+     * @return 성공 시 200 OK 상태의 ResponseEntity
+     */
     @PostMapping("/agree")
     @Operation(
             summary = "약관 동의 처리",
@@ -212,7 +229,7 @@ public class TermController {
         ### 📦 요청 본문
         ```json
         {
-          "agreedTermIds": 
+          "agreedTermIds": [1, 2, 3]
         }
         ```
         
@@ -225,7 +242,7 @@ public class TermController {
             @ApiResponse(
                     responseCode = "200",
                     description = "약관 동의 처리 성공 (이미 동의한 약관은 무시)",
-                    content = @Content // body 없음
+                    content = @Content
             ),
             @ApiResponse(
                     responseCode = "400",
@@ -256,6 +273,12 @@ public class TermController {
         return ResponseEntity.ok().build();
     }
 
+    /**
+     * 새로운 약관 레코드를 생성합니다. 이 작업은 관리자 권한이 필요합니다.
+     *
+     * @param request 저장할 약관 상세 정보
+     * @return 생성된 약관 정보를 포함하는 ResponseEntity
+     */
     @PostMapping
     @Operation(
             summary = "[ADMIN] 약관 생성",
@@ -290,6 +313,13 @@ public class TermController {
         return ResponseEntity.ok(userTermService.createTerm(request));
     }
 
+    /**
+     * 기존 약관 레코드를 수정합니다. 이 작업은 관리자 권한이 필요합니다.
+     *
+     * @param termId  수정할 약관의 ID
+     * @param request 새로운 약관 상세 정보
+     * @return 수정된 약관 정보를 포함하는 ResponseEntity
+     */
     @PatchMapping
     @Operation(
             summary = "[ADMIN] 약관 수정",

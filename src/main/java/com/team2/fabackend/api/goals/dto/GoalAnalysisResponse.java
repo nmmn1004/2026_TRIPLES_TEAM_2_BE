@@ -7,8 +7,8 @@ import lombok.Getter;
 @Builder
 public class GoalAnalysisResponse {
     private Long goalId;
-    private String analysisMessage; //분석 결과 메세지
-    private Long changedDays; //변동 목표 일수
+    private String analysisMessage;
+    private Long changedDays;
     private String type;
     private double successRate;
 }

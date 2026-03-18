@@ -25,7 +25,13 @@ public class GoalService {
     private final LedgerRepository ledgerRepository;
     private final UserRepository userRepository;
 
-    // C : 목표 설정 및 저장
+    /**
+     * 사용자의 새로운 저축 목표를 생성하고 저장합니다.
+     * 
+     * @param request 저축 목표 생성 요청 정보 (제목, 목표 금액, 시작/종료일 등)
+     * @param userId 유저 식별자
+     * @return 생성된 저축 목표의 ID
+     */
     @Transactional
     public Long createGoal(GoalRequest request, Long userId) {
         User user = userRepository.findById(userId)
@@ -46,7 +52,11 @@ public class GoalService {
         return goalRepository.save(goal).getId();
     }
 
-    // R : 목표 조회
+    /**
+     * 시스템에 등록된 모든 저축 목표를 조회합니다.
+     * 
+     * @return 모든 저축 목표 응답 리스트
+     */
     public List<GoalResponse> findAllGoals() {
         return goalRepository.findAll().stream().map(goal -> {
             Long totalSpent = goal.getCurrentAmount();
@@ -79,7 +89,12 @@ public class GoalService {
         }).collect(Collectors.toList());
     }
 
-    // R : 현재 진행중인 목표(유효한 목표) 조회
+    /**
+     * 특정 사용자의 현재 진행 중인(활성화된) 저축 목표 리스트를 조회합니다.
+     * 
+     * @param userId 유저 식별자
+     * @return 활성화된 저축 목표 응답 리스트
+     */
     public List<GoalResponse> findActiveGoals(Long userId) {
         LocalDate today = LocalDate.now();
 
@@ -111,7 +126,12 @@ public class GoalService {
                 .collect(Collectors.toList());
     }
 
-    // U : 목표 수정
+    /**
+     * 기존 저축 목표 정보를 수정합니다.
+     * 
+     * @param id 수정할 저축 목표의 식별자
+     * @param request 수정할 저축 목표 정보
+     */
     @Transactional
     public void updateGoal(Long id, GoalRequest request) {
         Goal goal = goalRepository.findById(id)
@@ -119,13 +139,22 @@ public class GoalService {
         goal.update(request.getTitle(), request.getTargetAmount(), request.getStartDate(), request.getEndDate(), request.getMemo(), request.getCategory());
     }
 
-    // D : 목표 삭제
+    /**
+     * 특정 저축 목표를 삭제합니다.
+     * 
+     * @param id 삭제할 저축 목표의 식별자
+     */
     @Transactional
     public void deleteGoal(Long id) {
         goalRepository.deleteById(id);
     }
 
-    // analyzeGoal : 개별 목표 상세 분석
+    /**
+     * 특정 저축 목표의 달성도 및 진행 상태를 상세 분석합니다.
+     * 
+     * @param id 분석할 저축 목표의 식별자
+     * @return 분석 결과 정보 (달성률, 변동 일수, 분석 메시지 등)
+     */
     public GoalAnalysisResponse analyzeGoal(Long id) {
         Goal goal = goalRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("목표를 찾을 수 없습니다. id=" + id));
@@ -163,12 +192,27 @@ public class GoalService {
                 .build();
     }
 
+    /**
+     * 누적 지출액과 허용 예산을 비교하여 목표의 현재 상태(안전, 주의, 위험)를 판별합니다.
+     * 
+     * @param spent 현재까지의 누적 지출액
+     * @param allowance 현재까지 허용된 누적 예산
+     * @return 상태 문자열 (위험, 주의, 안전)
+     */
     private String determineStatus(Long spent, double allowance) {
         if (spent > allowance * 1.1) return "위험";
         if (spent > allowance) return "주의";
         return "안전";
     }
 
+    /**
+     * 목표의 현재 달성 성공률을 계산합니다.
+     * 
+     * @param goal 저축 목표 엔티티
+     * @param diff 누적 지출액과 허용 예산의 차이
+     * @param changedDays 변동된 일수
+     * @return 계산된 성공률 (%)
+     */
     private double calculateSuccessRate(Goal goal, double diff, long changedDays) {
         long totalPeriod = java.time.temporal.ChronoUnit.DAYS.between(goal.getStartDate(), goal.getEndDate());
         if (totalPeriod <= 0) totalPeriod = 1;

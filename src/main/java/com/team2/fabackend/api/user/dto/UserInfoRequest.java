@@ -10,9 +10,6 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @Schema(description = "유저 정보")
 public class UserInfoRequest {
-    @Schema(description = "유저 실명", example = "null")
-    private String name;
-
     @Schema(description = "유저 별명", example = "null")
     private String nickName;
 

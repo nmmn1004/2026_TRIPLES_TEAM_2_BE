@@ -32,20 +32,14 @@ public class User extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    //  Account info
     @Column(nullable = false, unique = true)
-    private String userId;
+    private String email;
     @Column(nullable = false)
     private String password;
     @Column(nullable = false)
     @Enumerated(value = EnumType.STRING)
     private SocialType socialType;
-    @Column(nullable = false, unique = true)
-    private String phoneNumber;
 
-    //  User info
-    @Column(nullable = false)
-    private String name;
     @Column(nullable = false)
     private String nickName;
     @Column(nullable = false)
@@ -56,28 +50,39 @@ public class User extends BaseEntity {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<UserTerm> userTerms = new ArrayList<>();
 
+    /**
+     * 지정된 세부 정보로 새로운 User를 생성합니다.
+     *
+     * @param email      사용자의 email입니다.
+     * @param password    사용자의 인코딩된 비밀번호입니다.
+     * @param socialType  소셜 로그인 유형입니다.
+     * @param nickName    사용자의 별명입니다.
+     * @param birth       사용자의 생년월일입니다.
+     * @param userType    사용자 유형 (예: USER, ADMIN)입니다.
+     */
     @Builder
     protected User(
-            String userId,
+            String email,
             String password,
             SocialType socialType,
 
-            String name,
             String nickName,
             LocalDate birth,
-            String phoneNumber,
             UserType userType
     ) {
-        this.userId = userId;
+        this.email = email;
         this.password = password;
         this.socialType = socialType != null ? socialType : SocialType.LOCAL;
-        this.name = name;
         this.nickName = nickName;
         this.birth = birth;
-        this.phoneNumber = phoneNumber;
         this.userType = userType != null ? userType : UserType.USER;
     }
 
+    /**
+     * 사용자의 비밀번호를 업데이트합니다.
+     *
+     * @param encodedPassword 새로운 인코딩된 비밀번호입니다.
+     */
     public void updatePassword(String encodedPassword) {
         if (encodedPassword == null || encodedPassword.isBlank()) {
             throw new IllegalArgumentException("새로운 비밀번호는 비어 있을 수 없습니다.");
@@ -86,14 +91,11 @@ public class User extends BaseEntity {
         this.password = encodedPassword;
     }
 
-    public void updateName(String name) {
-        if (name == null || name.isBlank()) {
-            throw new IllegalArgumentException("새로운 이름은 비어 있을 수 없습니다.");
-        }
-
-        this.name = name;
-    }
-
+    /**
+     * 사용자의 별명을 업데이트합니다.
+     *
+     * @param nickName 새로운 별명입니다.
+     */
     public void updateNickName(String nickName) {
         if (nickName == null || nickName.isBlank()) {
             throw new IllegalArgumentException("새로운 별명은 비어 있을 수 없습니다.");
@@ -102,6 +104,11 @@ public class User extends BaseEntity {
         this.nickName = nickName;
     }
 
+    /**
+     * 사용자의 생년월일을 업데이트합니다.
+     *
+     * @param birth 새로운 생년월일입니다.
+     */
     public void updateBirth(LocalDate birth) {
         if (birth == null) {
             throw new IllegalArgumentException("생년월일은 비어 있을 수 없습니다.");

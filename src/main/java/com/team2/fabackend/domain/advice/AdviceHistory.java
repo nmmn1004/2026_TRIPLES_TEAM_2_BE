@@ -34,6 +34,13 @@ public class AdviceHistory {
     @Column(columnDefinition = "TEXT")
     private String adviceMessage;
 
+    /**
+     * 새로운 AdviceHistory 레코드를 생성합니다.
+     *
+     * @param userId        사용자의 ID입니다.
+     * @param createdAt     레코드가 생성된 날짜입니다.
+     * @param adviceMessage 조언 메시지 내용입니다.
+     */
     public AdviceHistory(Long userId, LocalDate createdAt, String adviceMessage) {
         this.userId = userId;
         this.createdAt = createdAt;

@@ -39,11 +39,17 @@ public class UserTerm {
     @JoinColumn(name = "term_id")
     private Term term;
 
-//  동의 여부
     private boolean agreed;
-//  동의 날짜
     private LocalDateTime agreedAt;
 
+    /**
+     * Builder 사용을 위한 프라이빗 생성자입니다.
+     *
+     * @param user     약관과 연관된 사용자입니다.
+     * @param term     동의 대상 약관입니다.
+     * @param agreed   동의 상태입니다.
+     * @param agreedAt 동의 시간입니다.
+     */
     @Builder
     private UserTerm(User user, Term term, boolean agreed, LocalDateTime agreedAt) {
         this.user = user;
@@ -52,7 +58,13 @@ public class UserTerm {
         this.agreedAt = agreedAt;
     }
 
-    /** 유저가 약관에 동의 */
+    /**
+     * 동의를 나타내는 새로운 UserTerm 레코드를 생성합니다.
+     *
+     * @param user 약관에 동의하는 사용자입니다.
+     * @param term 동의 대상 약관입니다.
+     * @return 새로운 UserTerm 인스턴스입니다.
+     */
     public static UserTerm agree(User user, Term term) {
         return UserTerm.builder()
                 .user(user)
@@ -62,6 +74,15 @@ public class UserTerm {
                 .build();
     }
 
+    /**
+     * 약관 ID 목록을 처리하고 사용자가 아직 동의하지 않은 약관에 대해 새로운 UserTerm 레코드를 생성합니다.
+     *
+     * @param user           사용자 엔티티입니다.
+     * @param activeTerms    현재 활성화된 약관 목록입니다.
+     * @param agreedTermIds  사용자가 동의하는 약관 ID 모음입니다.
+     * @param alreadyAgreed  사용자가 이미 동의한 약관 ID 세트입니다.
+     * @return 영속화될 새로운 UserTerm 객체 목록입니다.
+     */
     public static List<UserTerm> agreeNewTerms(
             User user,
             List<Term> activeTerms,

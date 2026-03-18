@@ -14,7 +14,6 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -31,11 +30,10 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-@Slf4j
 @RestController
 @RequestMapping("/users")
 @RequiredArgsConstructor
-@SecurityRequirement(name = "JWT") // 클래스 수준 글로벌 보안 설정
+@SecurityRequirement(name = "JWT")
 @Tag(name = "User", description = """
     ## 유저 관리 API
     사용자 정보 조회, 수정, 비밀번호 변경 및 탈퇴를 제공합니다.
@@ -71,19 +69,36 @@ import org.springframework.web.bind.annotation.RestController;
 public class UserController {
     private final UserService userService;
 
+    /**
+     * 현재 인증된 사용자의 정보를 조회합니다.
+     *
+     * @param userId 인증된 사용자의 ID
+     * @return 사용자의 정보를 포함한 ResponseEntity
+     */
     @GetMapping("/me")
     @Operation(summary = "자신 회원 정보 조회", description = "AccessToken으로 사용자 조회")
     public ResponseEntity<UserInfoResponse> getCurrentUser(@AuthenticationPrincipal Long userId) {
-        log.info("Current User ID: {}", userId);
         return ResponseEntity.ok(userService.getUser(userId));
     }
 
+    /**
+     * 다른 사용자의 공개 프로필 정보를 조회합니다.
+     *
+     * @param userId 조회할 사용자의 ID
+     * @return 사용자의 정보를 포함한 ResponseEntity
+     */
     @GetMapping("/{userId}")
     @Operation(summary = "타인 회원 정보 조회", description = "공개 프로필 정보를 조회합니다.")
     public ResponseEntity<UserInfoResponse> getUser(@PathVariable Long userId) {
         return ResponseEntity.ok(userService.getUser(userId));
     }
 
+    /**
+     * 전체 사용자 목록을 페이징하여 조회합니다.
+     *
+     * @param pageable 페이징 및 정렬 정보
+     * @return 사용자 정보 페이지를 포함한 ResponseEntity
+     */
     @GetMapping
     @Operation(summary = "전체 유저 페이징 조회")
     public ResponseEntity<Page<UserInfoResponse>> getAllUsers(
@@ -92,6 +107,13 @@ public class UserController {
         return ResponseEntity.ok(userService.getAllUsers(pageable));
     }
 
+    /**
+     * 사용자의 현재 비밀번호를 검증하고 헤더에 짧은 수명의 확인 토큰을 발급합니다.
+     *
+     * @param userId  인증된 사용자의 ID
+     * @param request 비밀번호 검증 요청 상세 정보
+     * @return "X-Password-Confirm-Token" 헤더에 확인 토큰을 포함한 ResponseEntity
+     */
     @PostMapping("/me/password/verify")
     @Operation(summary = "비밀번호 확인", description = "응답 헤더(X-Password-Confirm-Token)로 인증 토큰을 발급합니다.")
     public ResponseEntity<Void> verify(
@@ -104,6 +126,14 @@ public class UserController {
                 .build();
     }
 
+    /**
+     * 사용자의 프로필 정보를 수정합니다. 유효한 비밀번호 확인 토큰이 필요합니다.
+     *
+     * @param userId               인증된 사용자의 ID
+     * @param passwordConfirmToken 비밀번호 검증으로 발급받은 확인 토큰
+     * @param request              수정된 사용자 정보
+     * @return 성공 시 200 OK 상태의 ResponseEntity
+     */
     @PatchMapping("/me")
     @Operation(
             summary = "회원 정보 수정",
@@ -119,6 +149,14 @@ public class UserController {
         return ResponseEntity.ok().build();
     }
 
+    /**
+     * 사용자의 비밀번호를 변경합니다. 유효한 비밀번호 확인 토큰이 필요합니다.
+     *
+     * @param userId               인증된 사용자의 ID
+     * @param passwordConfirmToken 비밀번호 검증으로 발급받은 확인 토큰
+     * @param request              새로운 비밀번호를 포함한 요청 객체
+     * @return 성공 시 204 No Content 상태의 ResponseEntity
+     */
     @PatchMapping("/me/password")
     @Operation(
             summary = "비밀번호 변경",
@@ -134,6 +172,14 @@ public class UserController {
         return ResponseEntity.noContent().build();
     }
 
+    /**
+     * 인증된 사용자의 계정을 삭제합니다. 유효한 비밀번호 확인 토큰과 사유가 필요합니다.
+     *
+     * @param userId               인증된 사용자의 ID
+     * @param passwordConfirmToken 비밀번호 검증으로 발급받은 확인 토큰
+     * @param request              탈퇴 사유를 포함한 사용자 탈퇴 요청 객체
+     * @return 성공 시 200 OK 상태의 ResponseEntity
+     */
     @DeleteMapping("/me")
     @Operation(
             summary = "회원 탈퇴",

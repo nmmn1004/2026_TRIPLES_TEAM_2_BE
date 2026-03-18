@@ -26,26 +26,12 @@ public class UserReader {
         return userRepository.findAll(pageable);
     }
 
-    public User findByUserIdAndSocialType(String userId, SocialType socialType) {
-        return userRepository.findByUserIdAndSocialType(userId, socialType)
+    public User findByEmailAndSocialType(String email, SocialType socialType) {
+        return userRepository.findByEmailAndSocialType(email, socialType)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
     }
 
-    public User findGeneralUserByPhone(String phoneNumber) {
-        return userRepository.findByPhoneNumberAndSocialType(phoneNumber, SocialType.LOCAL)
-                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
-    }
-
-    public User findGeneralUserByIdAndPhone(String userId, String phoneNumber) {
-        return userRepository.findByUserIdAndPhoneNumberAndSocialType(userId, phoneNumber, SocialType.LOCAL)
-                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
-    }
-
-    public boolean existsByUserId(String userId) {
-        return userRepository.existsByUserIdAndSocialType(userId, SocialType.LOCAL);
-    }
-
-    public boolean existsByPhoneNumber(String phoneNumber) {
-        return userRepository.existsByPhoneNumber(phoneNumber);
+    public boolean existsByEmail(String email) {
+        return userRepository.existsByEmailAndSocialType(email, SocialType.LOCAL);
     }
 }

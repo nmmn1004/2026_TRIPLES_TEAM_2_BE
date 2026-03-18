@@ -21,6 +21,12 @@ import java.util.stream.Collectors;
 public class LedgerReader {
     private final LedgerRepository ledgerRepository;
 
+    /**
+     * 사용자의 월별 카테고리 합계 맵을 조회합니다.
+     *
+     * @param userId 사용자의 ID.
+     * @return 키는 카테고리, 값은 총 금액인 맵.
+     */
     public Map<String, Long> getMonthlyCategorySumMap(Long userId) {
         YearMonth yearMonth = YearMonth.now(ZoneId.of("Asia/Seoul"));
         LocalDate start = yearMonth.atDay(1);
@@ -36,6 +42,12 @@ public class LedgerReader {
                 ));
     }
 
+    /**
+     * 사용자의 상세 월별 가계부 내역을 조회합니다.
+     *
+     * @param userId 사용자의 ID.
+     * @return 상세 월별 가계부 내역 리스트.
+     */
     public List<MonthlyLedgerDetailResponse> getMonthlyLedgerDetails(Long userId) {
         YearMonth yearMonth = YearMonth.now(ZoneId.of("Asia/Seoul"));
 

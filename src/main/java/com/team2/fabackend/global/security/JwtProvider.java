@@ -33,6 +33,9 @@ public class JwtProvider {
 
     private SecretKey secretKey;
 
+    /**
+     * 의존성 주입 후 비밀 키를 초기화합니다.
+     */
     @PostConstruct
     private void init() {
         if (secretKeyString.length() < 32) {
@@ -42,6 +45,13 @@ public class JwtProvider {
         this.secretKey = Keys.hmacShaKeyFor(secretKeyString.getBytes(StandardCharsets.UTF_8));
     }
 
+    /**
+     * 사용자를 위한 액세스 토큰을 생성합니다.
+     *
+     * @param userId   사용자의 ID.
+     * @param userType 사용자의 유형/역할.
+     * @return 생성된 액세스 토큰 문자열.
+     */
     public String createAccessToken(Long userId, UserType userType) {
         return Jwts.builder()
                 .setSubject(userId.toString())
@@ -52,15 +62,27 @@ public class JwtProvider {
                 .compact();
     }
 
+    /**
+     * 사용자를 위한 리프레시 토큰을 생성합니다.
+     *
+     * @param userId 사용자의 ID.
+     * @return 생성된 리프레시 토큰 문자열.
+     */
     public String createRefreshToken(Long userId) {
         return Jwts.builder()
                 .setSubject(userId.toString())
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + refreshTokenValidity))
-                .signWith(secretKey) // SecretKey 사용
+                .signWith(secretKey) 
                 .compact();
     }
 
+    /**
+     * JWT 토큰의 유효성을 검증합니다.
+     *
+     * @param token 검증할 토큰.
+     * @return 토큰이 유효하면 true, 그렇지 않으면 false.
+     */
     public boolean validateToken(String token) {
         try {
             Jwts.parser()
@@ -73,6 +95,12 @@ public class JwtProvider {
         }
     }
 
+    /**
+     * JWT 토큰에서 사용자 ID를 추출합니다.
+     *
+     * @param token 토큰 문자열.
+     * @return Long 형식의 사용자 ID.
+     */
     public Long getUserIdFromToken(String token) {
         Claims claims = Jwts.parser()
                 .verifyWith(secretKey)
@@ -83,6 +111,12 @@ public class JwtProvider {
         return Long.parseLong(claims.getSubject());
     }
 
+    /**
+     * 제공된 JWT 토큰을 기반으로 Authentication 객체를 생성합니다.
+     *
+     * @param token 토큰 문자열.
+     * @return Authentication 객체.
+     */
     public Authentication getAuthentication(String token) {
         Long userId = getUserIdFromToken(token);
 

@@ -24,25 +24,57 @@ public class UserTermReader {
     private final TermRepository termRepository;
     private final UserTermRepository userTermRepository;
 
+    /**
+     * ID로 약관을 찾습니다.
+     *
+     * @param termId 약관의 ID.
+     * @return 찾은 약관 엔티티.
+     * @throws CustomException 약관을 찾을 수 없는 경우.
+     */
     public Term findById(Long termId) {
         return termRepository.findById(termId)
                 .orElseThrow(() -> new CustomException(ErrorCode.INVALID_DATA_VALUE));
     }
 
+    /**
+     * 현재 활성화된 모든 약관을 조회합니다.
+     *
+     * @return 모든 활성화된 약관 리스트.
+     */
     public List<Term> findActiveTerms() {
         return termRepository.findAll();
     }
 
+    /**
+     * 사용자가 이미 동의한 모든 약관의 ID를 조회합니다.
+     *
+     * @param user 사용자 엔티티.
+     * @return 동의한 약관 ID 셋.
+     */
     public Set<Long> findAgreedTermIds(User user) {
         return userTermRepository.findByUserAndAgreedTrue(user).stream()
                 .map(userTerm -> userTerm.getTerm().getId())
                 .collect(Collectors.toSet());
     }
 
+    /**
+     * 특정 사용자의 모든 UserTerm 레코드를 조회합니다.
+     *
+     * @param user 사용자 엔티티.
+     * @return UserTerm 엔티티 리스트.
+     */
     public List<UserTerm> findUserTerms(User user) {
         return userTermRepository.findByUser(user);
     }
 
+    /**
+     * 사용자가 모든 필수 약관에 동의했는지, 제공된 ID가 유효한지 검증합니다.
+     *
+     * @param activeTerms    현재 활성화된 약관 리스트.
+     * @param agreedTermIds  동의할 약관 ID 리스트.
+     * @throws IllegalStateException    필수 약관이 누락된 경우.
+     * @throws IllegalArgumentException 유효하지 않은 약관 ID가 제공된 경우.
+     */
     public void validateAgreement(List<Term> activeTerms, List<Long> agreedTermIds) {
 
         Map<Long, Term> termMap = activeTerms.stream()
@@ -65,9 +97,10 @@ public class UserTermReader {
     }
 
     /**
-     * 유저의 약관 동의 현황 조회
-     * - 현재 유효한 약관 기준
-     * - 동의 여부 포함
+     * 모든 현재 활성화된 약관을 기반으로 사용자의 약관 동의 상태를 조회합니다.
+     *
+     * @param user 사용자 엔티티.
+     * @return 사용자의 UserTermStatusResponse 객체 리스트.
      */
     public List<UserTermStatusResponse> findUserTermStatus(User user) {
         List<Term> activeTerms = termRepository.findAll();

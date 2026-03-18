@@ -19,7 +19,6 @@ import com.team2.fabackend.service.ledger.LedgerReader;
 import com.team2.fabackend.service.user.UserReader;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.prompt.PromptTemplate;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -31,7 +30,6 @@ import java.util.List;
 import java.util.Map;
 
 @Service
-@Slf4j
 @RequiredArgsConstructor
 public class MailService {
     private final JavaMailSender javaMailSender;
@@ -46,6 +44,13 @@ public class MailService {
     private final PromptTemplate generateAiReportPrompt;
     private final PromptTemplate generateAiReportSystemPrompt;
 
+    /**
+     * 사용자를 위한 AI 리포트를 생성하고 지정된 수신자 이메일로 전송합니다.
+     *
+     * @param userId        사용자의 ID.
+     * @param receiverEmail 수신자의 이메일 주소.
+     * @return 생성된 리포트 내용을 포함하는 AiReportResponse.
+     */
     public AiReportResponse sendAiReport(Long userId, String receiverEmail) {
         User user = userReader.findById(userId);
 
@@ -55,32 +60,41 @@ public class MailService {
 
         String message = generateAiReport(userId);
 
-        MimeMessage mimeMessage = javaMailSender.createMimeMessage();
-
-        try {
-            MimeMessageHelper mimeMessageHelper = new MimeMessageHelper(mimeMessage, false, "UTF-8");
-
-            mimeMessageHelper.setFrom("jjj4120@gmail.com");
-
-            mimeMessageHelper.setTo(receiverEmail);
-
-            mimeMessageHelper.setSubject(user.getNickName() + "님의 AI 소비 분석 리포트");
-
-            mimeMessageHelper.setText(message, true);
-
-            javaMailSender.send(mimeMessage);
-
-            log.info("메일 발송 성공!");
-        } catch (Exception e) {
-            log.info("메일 발송 실패!");
-
-            throw new CustomException(ErrorCode.EMAIL_SEND_FAILED);
-        }
+        sendMail(receiverEmail, user.getNickName() + "님의 AI 소비 분석 리포트", message);
 
         return new AiReportResponse(message);
     }
 
+    /**
+     * 지정된 수신자에게 이메일을 전송합니다.
+     *
+     * @param to      수신자 이메일 주소.
+     * @param subject 이메일 제목.
+     * @param content 이메일 본문 (HTML).
+     */
+    public void sendMail(String to, String subject, String content) {
+        MimeMessage mimeMessage = javaMailSender.createMimeMessage();
 
+        try {
+            MimeMessageHelper mimeMessageHelper = new MimeMessageHelper(mimeMessage, false, "UTF-8");
+            mimeMessageHelper.setFrom("jjj4120@gmail.com"); // 발신자 설정 (환경 변수 권장)
+            mimeMessageHelper.setTo(to);
+            mimeMessageHelper.setSubject(subject);
+            mimeMessageHelper.setText(content, true);
+
+            javaMailSender.send(mimeMessage);
+        } catch (Exception e) {
+            throw new CustomException(ErrorCode.EMAIL_SEND_FAILED);
+        }
+    }
+
+
+    /**
+     * LLM과 사용자 데이터를 사용하여 AI 소비 리포트 생성을 조율합니다.
+     *
+     * @param userId 사용자의 ID.
+     * @return 생성된 AI 리포트 문자열.
+     */
     private String generateAiReport(Long userId) {
         String userNickName = userReader.findById(userId).getNickName();
 
@@ -131,28 +145,15 @@ public class MailService {
                         .call()
                         .content();
 
-                log.info("✅ AI 리포트 생성 성공 (userId: {}, attempt: {}/{})",
-                        userId, attempt, maxRetries);
-
                 message = message
                         .replaceAll("(?s)```html", "")
                         .replaceAll("```", "")
                         .trim();
 
-                log.info("🧠 SYSTEM PROMPT =====================\n{}", generateAiReportSystemPrompt.getTemplate());
-                log.info("🧠 USER PROMPT =====================\n{}", generateAiReportPrompt.getTemplate());
-                log.info("🧠 PARAM budgetGoalJson = {}", budgetGoalJson);
-                log.info("🧠 PARAM goalsJson = {}", goalsJson);
-                log.info("🧠 PARAM monthlyDetailsJson = {}", monthlyDetailsJson);
-
                 return message;
 
             } catch (Exception e) {
-                log.warn("❌ AI 리포트 생성 실패 (userId: {}, attempt: {}/{}): {}",
-                        userId, attempt, maxRetries, e.getMessage());
-
                 if (attempt == maxRetries) {
-                    log.error("❌ AI 리포트 최종 실패 (userId: {})", userId, e);
                     throw new CustomException(ErrorCode.AI_REPORT_GENERATION_FAILED);
                 }
 

@@ -13,7 +13,6 @@ import com.team2.fabackend.global.enums.ResponseStatus;
 import com.team2.fabackend.service.budget.BudgetReader;
 import com.team2.fabackend.service.ledger.LedgerReader;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.prompt.PromptTemplate;
 import org.springframework.stereotype.Service;
@@ -28,7 +27,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -41,6 +39,13 @@ public class AdviceService {
     private final BudgetReader budgetReader;
     private final LedgerReader ledgerReader;
 
+    /**
+     * 사용자의 예산 설정과 지출 내역을 분석하여 AI 기반의 맞춤형 소비 조언 메시지를 생성합니다.
+     * 당일 이미 생성된 조언이 있다면 이를 반환하고, 데이터가 부족하면 기본 메시지를 반환합니다.
+     * 
+     * @param userId 조언을 생성할 유저의 식별자
+     * @return 조언 메시지, 상태, 하이라이트 정보 등이 담긴 응답 DTO
+     */
     @Transactional
     public AdviceMessageResponse generateAdvice(Long userId) {
         try {
@@ -70,8 +75,6 @@ public class AdviceService {
             boolean hasNoSpends = rawSpends == null || rawSpends.isEmpty() || monthlyDetails.isEmpty();
 
             if (hasNoBudget || hasNoSpends) {
-                log.info("ℹ️ 데이터 부족으로 AI 분석 스킵 (userId={})", userId);
-
                 return new AdviceMessageResponse(
                         ResponseStatus.SUCCESS,
                         ChipmunkStatus.CHIPMUNK_POSITIVE,
@@ -90,10 +93,6 @@ public class AdviceService {
             String spendPercentJson = mapper.writeValueAsString(spendPercent);
             String currentSpendsJson = mapper.writeValueAsString(currentSpends);
             String monthlyDetailsJson = mapper.writeValueAsString(monthlyDetails);
-
-            log.info("🧾 spendPercentJson = {}", spendPercentJson);
-            log.info("🧾 currentSpendsJson = {}", currentSpendsJson);
-            log.info("🧾 monthlyDetailsJson = {}", monthlyDetailsJson);
 
             ChipmunkStatus chipmunkStatus = decideChipmunkStatus(spendPercent);
 
@@ -128,8 +127,6 @@ public class AdviceService {
             );
 
         } catch (Exception e) {
-            log.error("❌ Advice 생성 실패 (userId={})", userId, e);
-
             return new AdviceMessageResponse(
                     ResponseStatus.ERROR,
                     ChipmunkStatus.CHIPMUNK_NEGATIVE,
@@ -139,6 +136,12 @@ public class AdviceService {
         }
     }
 
+    /**
+     * 카테고리 맵의 키값을 소문자로 정규화하여 처리합니다.
+     * 
+     * @param raw 원본 지출 맵
+     * @return 소문자 키를 가진 지출 맵
+     */
     private Map<String, Long> normalizeKeys(Map<String, Long> raw) {
         return raw.entrySet().stream()
                 .collect(Collectors.toMap(
@@ -148,6 +151,13 @@ public class AdviceService {
                 ));
     }
 
+    /**
+     * 예산 목표 대비 현재 지출 비율을 각 카테고리별로 계산합니다.
+     * 
+     * @param currentSpends 현재 지출 현황
+     * @param setGoal 설정된 예산 목표
+     * @return 카테고리별 예산 잔여/초과 비율 맵
+     */
     private Map<String, Long> calculateSpendPercent(Map<String, Long> currentSpends, BudgetGoal setGoal) {
         Map<String, Long> result = new HashMap<>();
         result.put("food", calculatePercent(currentSpends.getOrDefault("food", 0L), setGoal.getFoodAmount()));
@@ -157,12 +167,25 @@ public class AdviceService {
         return result;
     }
 
+    /**
+     * 특정 금액 간의 비율을 백분율로 계산합니다.
+     * 
+     * @param currentSpend 현재 지출액
+     * @param setSpend 설정 예산액
+     * @return 계산된 백분율
+     */
     private Long calculatePercent(long currentSpend, long setSpend) {
         if (setSpend == 0) return 0L;
         double percent = ((double) (setSpend - currentSpend) / setSpend) * 100.0;
         return Math.round(percent);
     }
 
+    /**
+     * 지출 비율에 따라 앱의 캐릭터(다람쥐) 상태를 결정합니다.
+     * 
+     * @param spendPercent 카테고리별 지출 비율
+     * @return 결정된 캐릭터 상태 (긍정/부정)
+     */
     private ChipmunkStatus decideChipmunkStatus(Map<String, Long> spendPercent) {
         long min = spendPercent.values().stream()
                 .min(Long::compareTo)
@@ -170,6 +193,13 @@ public class AdviceService {
         return min < -20 ? ChipmunkStatus.CHIPMUNK_NEGATIVE : ChipmunkStatus.CHIPMUNK_POSITIVE;
     }
 
+    /**
+     * 지출 데이터와 상세 내역에서 사용자에게 보여줄 주요 특징(하이라이트)을 추출합니다.
+     * 
+     * @param spendPercent 카테고리별 지출 비율
+     * @param monthlyDetails 월간 상세 내역
+     * @return 추출된 하이라이트 문자열 리스트
+     */
     private List<String> extractHighlights(Map<String, Long> spendPercent,
                                            List<MonthlyLedgerDetailResponse> monthlyDetails) {
 
