@@ -49,6 +49,13 @@ services:
   spring_app:
     image: ${ECR_REGISTRY}fa-project:latest
     container_name: spring_app
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '1.0'
+        reservations:
+          memory: 512M
     env_file:
       - .env
     volumes:
@@ -67,6 +74,8 @@ services:
     depends_on:
       mysql_db:
         condition: service_healthy
+      redis:
+        condition: service_started
     restart: unless-stopped
     logging:
       driver: "json-file"
@@ -79,11 +88,20 @@ services:
   redis:
     image: redis:6.2-alpine
     container_name: deploy-redis
+    deploy:
+      resources:
+        limits:
+          memory: 256M
     ports:
       - "6379:6379"
     volumes:
       - redis-data:/data
     command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     logging:
       driver: "json-file"
       options:

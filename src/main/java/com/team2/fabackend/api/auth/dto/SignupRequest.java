@@ -1,6 +1,7 @@
 package com.team2.fabackend.api.auth.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -14,7 +15,6 @@ import java.time.LocalDate;
 @Getter
 @NoArgsConstructor
 public class SignupRequest {
-
     @NotBlank
     @Email
     @Schema(description = "이메일", example = "test@test.com")
@@ -32,4 +32,8 @@ public class SignupRequest {
     @Schema(description = "생년", example = "2002-04-01")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     private LocalDate birth;
+
+    @NotNull
+    @Schema(description = "기기 식별 번호")
+    private String deviceId;
 }

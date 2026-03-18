@@ -1,12 +1,7 @@
 package com.team2.fabackend.domain.advice;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-import jakarta.persistence.UniqueConstraint;
+import com.team2.fabackend.domain.user.User;
+import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -19,7 +14,7 @@ import java.time.LocalDate;
 @Table(
         name = "advice_history",
         uniqueConstraints = {
-                @UniqueConstraint(columnNames = {"userId", "createdAt"})
+                @UniqueConstraint(columnNames = {"user_id", "createdAt"})
         }
 )
 public class AdviceHistory {
@@ -27,7 +22,9 @@ public class AdviceHistory {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private Long userId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private User user;
 
     private LocalDate createdAt;
 
@@ -37,12 +34,12 @@ public class AdviceHistory {
     /**
      * 새로운 AdviceHistory 레코드를 생성합니다.
      *
-     * @param userId        사용자의 ID입니다.
+     * @param user          사용자 객체입니다.
      * @param createdAt     레코드가 생성된 날짜입니다.
      * @param adviceMessage 조언 메시지 내용입니다.
      */
-    public AdviceHistory(Long userId, LocalDate createdAt, String adviceMessage) {
-        this.userId = userId;
+    public AdviceHistory(User user, LocalDate createdAt, String adviceMessage) {
+        this.user = user;
         this.createdAt = createdAt;
         this.adviceMessage = adviceMessage;
     }

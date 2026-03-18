@@ -5,6 +5,7 @@ import com.team2.fabackend.api.auth.dto.SignupRequest;
 import com.team2.fabackend.api.auth.dto.TokenPair;
 import com.team2.fabackend.api.email.dto.EmailVerifyRequest;
 import com.team2.fabackend.domain.user.User;
+import com.team2.fabackend.global.enums.AccountStatus;
 import com.team2.fabackend.global.enums.ErrorCode;
 import com.team2.fabackend.global.enums.SocialType;
 import com.team2.fabackend.global.exception.CustomException;
@@ -50,10 +51,19 @@ public class AuthService {
             throw new CustomException(ErrorCode.DUPLICATE_USER_ID);
         }
 
+        if (userReader.existsByDeviceId(request.getDeviceId())) {
+            throw new CustomException(ErrorCode.DUPLICATE_DEVICE_ID);
+        }
+
+        if (userReader.existsByNickName(request.getNickName())) {
+            throw new CustomException(ErrorCode.DUPLICATE_NICKNAME);
+        }
+
         User user = User.builder()
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
                 .socialType(SocialType.LOCAL)
+                .deviceId(request.getDeviceId())
                 .nickName(request.getNickName())
                 .birth(request.getBirth())
                 .build();
@@ -84,9 +94,21 @@ public class AuthService {
     public TokenPair login(LoginRequest request) {
         User user = userReader.findByEmailAndSocialType(request.getEmail(), SocialType.LOCAL);
 
+        // 계정 상태 확인
+        if (user.getAccountStatus() == AccountStatus.LOCKED) {
+            throw new CustomException(ErrorCode.USER_LOCKED);
+        }
+        if (user.getAccountStatus() == AccountStatus.DELETED) {
+            throw new CustomException(ErrorCode.USER_DELETED);
+        }
+
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+            user.increaseLoginFailCount();
             throw new CustomException(ErrorCode.INVALID_PASSWORD);
         }
+
+        // 로그인 성공 시 정보 업데이트
+        user.updateLastLoginAt();
 
         String accessToken = jwtProvider.createAccessToken(user.getId(), user.getUserType());
         String refreshToken = jwtProvider.createRefreshToken(user.getId());

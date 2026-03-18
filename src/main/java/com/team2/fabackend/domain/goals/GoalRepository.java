@@ -17,7 +17,7 @@ public interface GoalRepository extends JpaRepository<Goal, Long> {
      * @param userId 사용자의 ID입니다.
      * @return 사용자의 목표 목록입니다.
      */
-    List<Goal> findAllByUserId(Long userId);
+    List<Goal> findAllByUser_Id(Long userId);
 
     /**
      * 지정된 날짜 범위 내에서 카테고리별 지출 통계를 검색합니다.

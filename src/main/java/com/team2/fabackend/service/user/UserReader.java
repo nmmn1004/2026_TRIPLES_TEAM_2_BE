@@ -34,4 +34,18 @@ public class UserReader {
     public boolean existsByEmail(String email) {
         return userRepository.existsByEmailAndSocialType(email, SocialType.LOCAL);
     }
+
+    public boolean existsByDeviceId(String deviceId) {
+        if (deviceId == null || deviceId.isBlank()) {
+            return false;
+        }
+        return userRepository.existsByDeviceId(deviceId);
+    }
+
+    public boolean existsByNickName(String nickName) {
+        if (nickName == null || nickName.isBlank()) {
+            return false;
+        }
+        return userRepository.existsByNickName(nickName);
+    }
 }

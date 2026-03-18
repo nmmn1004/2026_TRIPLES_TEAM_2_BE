@@ -12,6 +12,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+import com.team2.fabackend.service.user.UserReader;
+...
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -19,6 +21,7 @@ public class LedgerService {
 
     private final LedgerRepository ledgerRepository;
     private final GoalRepository goalRepository;
+    private final UserReader userReader;
 
     /**
      * 사용자의 가계부 내역을 저장하고, 지출(EXPENSE) 타입인 경우 연동된 저축 목표에 금액을 반영합니다.
@@ -27,8 +30,10 @@ public class LedgerService {
      * @param request 가계부 저장 요청 정보 (금액, 카테고리, 메모, 타입, 일시 등)
      */
     public void saveLedger(Long userId, LedgerRequest request) {
+        User user = userReader.findById(userId);
+        
         Ledger ledger = Ledger.builder()
-                .userId(userId)
+                .user(user)
                 .amount(request.getAmount())
                 .category(request.getCategory())
                 .memo(request.getMemo())
@@ -51,7 +56,7 @@ public class LedgerService {
      * @param request 가계부 지출 정보
      */
     private void updateRelatedGoals(Long userId, LedgerRequest request) {
-        List<Goal> activeGoals = goalRepository.findAllByUserId(userId);
+        List<Goal> activeGoals = goalRepository.findAllByUser_Id(userId);
 
         for (Goal goal : activeGoals) {
             String goalCategory = goal.getCategory();
@@ -71,7 +76,7 @@ public class LedgerService {
      */
     @Transactional(readOnly = true)
     public List<Ledger> findAllByUserId(Long userId) {
-        return ledgerRepository.findAllByUserId(userId);
+        return ledgerRepository.findAllByUser_Id(userId);
     }
 
     /**
