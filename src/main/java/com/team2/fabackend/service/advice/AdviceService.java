@@ -8,10 +8,12 @@ import com.team2.fabackend.domain.advice.AdviceHistory;
 import com.team2.fabackend.domain.advice.AdviceHistoryRepository;
 import com.team2.fabackend.domain.budget.BudgetGoal;
 import com.team2.fabackend.domain.ledger.MonthlyLedgerDetailResponse;
+import com.team2.fabackend.domain.user.User;
 import com.team2.fabackend.global.enums.ChipmunkStatus;
 import com.team2.fabackend.global.enums.ResponseStatus;
 import com.team2.fabackend.service.budget.BudgetReader;
 import com.team2.fabackend.service.ledger.LedgerReader;
+import com.team2.fabackend.service.user.UserReader;
 import lombok.RequiredArgsConstructor;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.prompt.PromptTemplate;
@@ -38,6 +40,7 @@ public class AdviceService {
     private final AdviceHistoryRepository adviceHistoryRepository;
     private final BudgetReader budgetReader;
     private final LedgerReader ledgerReader;
+    private final UserReader userReader;
 
     /**
      * 사용자의 예산 설정과 지출 내역을 분석하여 AI 기반의 맞춤형 소비 조언 메시지를 생성합니다.
@@ -117,7 +120,8 @@ public class AdviceService {
 
             List<String> highlights = extractHighlights(spendPercent, monthlyDetails);
 
-            adviceHistoryRepository.save(new AdviceHistory(userId, today, message));
+            User user = userReader.findById(userId);
+            adviceHistoryRepository.save(new AdviceHistory(user, today, message));
 
             return new AdviceMessageResponse(
                     ResponseStatus.SUCCESS,

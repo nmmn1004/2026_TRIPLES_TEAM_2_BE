@@ -34,4 +34,20 @@ public interface UserRepository extends JpaRepository<User, Long> {
      * @return 사용자가 존재하면 true, 그렇지 않으면 false입니다.
      */
     boolean existsByEmailAndSocialType(String email, SocialType socialType);
+
+    /**
+     * 주어진 기기 ID를 가진 사용자가 존재하는지 확인합니다.
+     *
+     * @param deviceId 기기 고유 ID입니다.
+     * @return 사용자가 존재하면 true, 그렇지 않으면 false입니다.
+     */
+    boolean existsByDeviceId(String deviceId);
+
+    /**
+     * 주어진 닉네임을 가진 사용자가 존재하는지 확인합니다.
+     *
+     * @param nickName 닉네임입니다.
+     * @return 사용자가 존재하면 true, 그렇지 않으면 false입니다.
+     */
+    boolean existsByNickName(String nickName);
 }

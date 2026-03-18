@@ -80,10 +80,15 @@ dependencies {
     testImplementation 'com.h2database:h2'
 }
 
+bootJar {
+    archiveFileName = 'app.jar'
+}
+
 test {
     useJUnitPlatform()
 }
 
+// 빌드 시 불필요한 일반 jar 생성 방지
 jar {
     enabled = false
 }

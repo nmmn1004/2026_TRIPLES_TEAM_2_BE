@@ -32,8 +32,9 @@ public class Ledger {
 
     private Long goalId;
 
-    @Column(name = "user_id")
-    private Long userId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private User user;
 
     /**
      * 가계부 항목을 새로운 정보로 업데이트합니다.

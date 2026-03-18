@@ -18,7 +18,7 @@ public interface LedgerRepository extends JpaRepository<Ledger, Long> {
      * @return 지출 가계부 항목 목록입니다.
      */
     @Query("SELECT l FROM Ledger l " +
-            "WHERE l.userId = :userId " +
+            "WHERE l.user.id = :userId " +
             "AND l.date BETWEEN :start AND :end " +
             "AND l.type = 'EXPENSE'")
     List<Ledger> findAllExpensesByUserIdBetween(@Param("userId") Long userId,
@@ -34,7 +34,7 @@ public interface LedgerRepository extends JpaRepository<Ledger, Long> {
      * @return 지출 금액의 합계입니다.
      */
     @Query("SELECT SUM(l.amount) FROM Ledger l " +
-            "WHERE l.userId = :userId " +
+            "WHERE l.user.id = :userId " +
             "AND l.date BETWEEN :start AND :end " +
             "AND l.type = 'EXPENSE'")
     Long sumExpenseAmountBetween(@Param("userId") Long userId,
@@ -50,7 +50,7 @@ public interface LedgerRepository extends JpaRepository<Ledger, Long> {
      * @param monthEnd   해당 월의 종료입니다.
      * @return 평균 지출 금액입니다.
      */
-    @Query("SELECT AVG(l.amount) FROM Ledger l JOIN User u ON l.userId = u.id " +
+    @Query("SELECT AVG(l.amount) FROM Ledger l JOIN User u ON l.user.id = u.id " +
             "WHERE u.birth BETWEEN :startDate AND :endDate " +
             "AND l.type = 'EXPENSE' " +
             "AND l.date BETWEEN :monthStart AND :monthEnd")
@@ -84,7 +84,7 @@ public interface LedgerRepository extends JpaRepository<Ledger, Long> {
      * @param userId 사용자의 ID입니다.
      * @return 사용자의 모든 가계부 항목 목록입니다.
      */
-    List<Ledger> findAllByUserId(Long userId);
+    List<Ledger> findAllByUser_Id(Long userId);
 
     /**
      * 특정 날짜 범위 내의 모든 가계부 항목을 찾습니다.
@@ -106,7 +106,7 @@ public interface LedgerRepository extends JpaRepository<Ledger, Long> {
     @Query("SELECT new com.team2.fabackend.domain.ledger.MonthlyCategorySumLedger(" +
             "l.category, SUM(l.amount)) " +
             "FROM Ledger l " +
-            "WHERE l.userId = :userId " +
+            "WHERE l.user.id = :userId " +
             "AND l.type = 'EXPENSE' " +
             "AND l.date BETWEEN :startDate AND :endDate " +
             "GROUP BY l.category")
@@ -127,7 +127,7 @@ public interface LedgerRepository extends JpaRepository<Ledger, Long> {
     @Query("SELECT new com.team2.fabackend.domain.ledger.MonthlyLedgerDetailResponse(" +
             "l.category, l.amount, l.date, l.time) " +
             "FROM Ledger l " +
-            "WHERE l.userId = :userId " +
+            "WHERE l.user.id = :userId " +
             "AND l.type = 'EXPENSE' " +
             "AND l.date BETWEEN :startDate AND :endDate " +
             "ORDER BY l.date DESC, l.time DESC")
