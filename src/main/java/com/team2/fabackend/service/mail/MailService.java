@@ -112,7 +112,7 @@ public class MailService {
                         budgetGoal.getTotalAmount()
                 );
 
-                List<Goal> goals = goalRepository.findAllByUserId(userId);
+                List<Goal> goals = goalRepository.findAllByUser_Id(userId);
 
                 List<AiGoalDto> aiGoals = goals.stream()
                         .map(goal -> new AiGoalDto(
