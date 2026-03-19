@@ -1,5 +1,6 @@
 package com.team2.fabackend.api.budget.dto;
 
+import com.team2.fabackend.domain.budget.BudgetGoal;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
