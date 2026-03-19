@@ -24,23 +24,24 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(
         name = "AI Report",
         description = """
-    ## 🧾 AI 리포트(Report) API
+    ## 📧 AI 리포트(Report) API
     
-    사용자가 AI 리포트를 이메일로 받도록 요청하는 API입니다.
-    
-    ---
-    
-    ### ⚙️ 공통 요청 조건
-    - 모든 `/report/**` API는 **로그인 필요**
-    - `Authorization: Bearer {accessToken}` 헤더 필수
+    사용자의 지출 내역을 AI가 분석하여 이메일로 상세 리포트를 전송합니다.
     
     ---
     
-    ### 📧 요청 흐름
-    1️⃣ 로그인된 사용자가 수신자 이메일을 입력  
-    2️⃣ 서버가 내부적으로 AI 분석 리포트를 생성하고 이메일로 발송  
-    3️⃣ **메일 발송 결과 메시지만 JSON으로 반환**  
-       (※ 리포트 파일이나 인증 코드는 반환하지 않습니다.)
+    ### 🔑 주요 특징
+    - **이메일 전송**: 분석 결과는 PDF/HTML 형식으로 지정된 이메일로 발송됩니다.
+    - **비동기 처리**: 메일 발송 요청만 즉시 응답하며, 실제 발송은 서버 백그라운드에서 처리됩니다.
+    
+    ### 🧩 Flutter / Retrofit 예시
+    ```dart
+    @RestApi(baseUrl: "https://api.com/report")
+    abstract class AiReportApi {
+      @POST("/send")
+      Future<AiReportResponse> sendAiReport(@Body AiReportRequest request);
+    }
+    ```
     """
 )
 public class AiReportController {
@@ -55,55 +56,13 @@ public class AiReportController {
      * @return 리포트 생성 및 전송 프로세스의 결과 메시지를 포함한 ResponseEntity.
      */
     @Operation(
-            summary = "AI 리포트 메일 발송",
-            description = """
-        로그인한 사용자의 AI 리포트를 지정된 이메일 주소로 전송합니다.
-        
-        내부 동작:
-        - 유효한 사용자 ID를 기반으로 사용자 데이터를 조회  
-        - AI 분석 결과를 PDF 또는 HTML 형식으로 생성 (서버 내부 처리)  
-        - `receiverEmail`로 발송  
-        - **클라이언트에는 발송 결과 메시지만 반환**합니다.  
-          (리포트 파일이나 코드 반환 없음)
-        
-        ---
-        
-        ### 🚀 요청 예시
-        ```json
-        {
-          "receiverEmail": "example@gmail.com"
-        }
-        ```
-        
-        ### 📦 응답 예시 (성공)
-        ```json
-        {
-          "message": "AI 리포트 내용"
-        }
-        ```
-        """
+            summary = "AI 리포트 이메일 발송",
+            description = "이번 달 소비 분석 리포트를 사용자가 입력한 이메일 주소로 전송합니다. 설정 화면이나 리포트 탭에서 사용하세요."
     )
     @ApiResponses({
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "메일 발송 요청 성공 (responseStatus = SUCCESS or ERROR)",
-                    content = @Content(schema = @Schema(implementation = AiReportResponse.class))
-            ),
-            @ApiResponse(
-                    responseCode = "400",
-                    description = "잘못된 요청 데이터 (receiverEmail이 유효하지 않음)",
-                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))
-            ),
-            @ApiResponse(
-                    responseCode = "401",
-                    description = "인증 실패 (토큰 만료 또는 유효하지 않음)",
-                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))
-            ),
-            @ApiResponse(
-                    responseCode = "500",
-                    description = "서버 내부 오류 (메일 서버 장애 등)",
-                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))
-            )
+            @ApiResponse(responseCode = "200", description = "발송 요청 성공"),
+            @ApiResponse(responseCode = "400", description = "유효하지 않은 이메일 주소"),
+            @ApiResponse(responseCode = "401", description = "인증 실패 (토큰 만료)")
     })
     @PostMapping("/send")
     public ResponseEntity<AiReportResponse> sendAiReport(

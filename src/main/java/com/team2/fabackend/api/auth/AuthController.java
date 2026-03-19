@@ -10,6 +10,8 @@ import com.team2.fabackend.api.email.dto.EmailVerifyRequest;
 import com.team2.fabackend.service.phoneVerification.EmailVerificationService;
 import com.team2.fabackend.service.auth.AuthService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -30,36 +32,32 @@ import java.util.concurrent.TimeUnit;
 @RestController
 @RequestMapping("/auth")
 @RequiredArgsConstructor
-@Tag(name = "Auth", description = """
-    ## 인증 및 회원가입 API
+@Tag(
+        name = "Auth",
+        description = """
+    ## 🔐 인증 및 계정 관리(Auth) API
     
-    ### 💡 [중요] 실시간 중복 체크 (Debouncing) 가이드
-    이메일(`email`) 입력 시 실시간 중복 체크를 구현할 때는 서버 부하를 줄이기 위해 반드시 **Debouncing**을 적용해야 합니다.
+    회원가입, 로그인, 토큰 갱신 및 비밀번호 찾기 기능을 제공합니다.
     
-    #### 1. Debouncing 이란?
-    사용자가 입력을 멈춘 후 특정 시간(예: 300ms) 동안 추가 입력이 없을 때만 API를 호출하는 방식입니다.
+    ---
     
-    #### 2. Kotlin (Coroutine) 구현 예시
-    ```kotlin
-    // ViewModel 내부 예시
-    private var searchJob: Job? = null
+    ### 🔑 주요 특징
+    - **인증 방식**: Bearer JWT 토큰을 사용하며, Access Token은 헤더로, Refresh Token은 바디로 관리합니다.
+    - **이메일 인증**: 모든 가입 및 비밀번호 찾기 시나리오에 이메일 기반 OTP 인증이 포함됩니다.
     
-    fun onEmailChanged(newEmail: String) {
-        searchJob?.cancel() // 이전 대기 중인 요청 취소
-        searchJob = viewModelScope.launch {
-            delay(300L) // 300ms 대기
-            if (newEmail.length >= 4) { // 최소 글자수 제한 권장
-                checkEmailDuplication(newEmail)
-            }
-        }
+    ### 🧩 Flutter / Retrofit 예시
+    ```dart
+    @RestApi(baseUrl: "https://api.com/auth")
+    abstract class AuthApi {
+      @POST("/login")
+      Future<HttpResponse<LoginResponse>> login(@Body LoginRequest request);
+      
+      @POST("/refresh")
+      Future<HttpResponse<LoginResponse>> refresh(@Body RefreshRequest request);
     }
     ```
-    
-    #### 3. 추천 정책
-    - **최소 호출 글자수:** 4자 이상부터 요청 권장
-    - **지연 시간:** 300ms ~ 500ms
-    - **에러 처리:** 중복 시 `409 Conflict (A001)` 에러 응답을 기반으로 UI 처리
-    """)
+    """
+)
 public class AuthController {
     private final AuthService authService;
     private final EmailVerificationService emailVerificationService;
@@ -72,11 +70,15 @@ public class AuthController {
      * @return 성공 시 200 OK
      */
     @PostMapping("/signup")
-    @Operation(summary = "회원가입", description = "이메일, 비밀번호, 생년월일을 이용해 회원가입을 진행합니다. **먼저 /signup/send-code를 통한 이메일 인증이 완료되어야 합니다.**")
+    @Operation(
+            summary = "신규 회원가입",
+            description = "이메일, 비밀번호, 닉네임 등을 이용해 가입합니다. 호출 전 반드시 이메일 인증(/auth/email/verify)이 완료되어야 합니다."
+    )
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "회원가입 성공"),
-            @ApiResponse(responseCode = "400", description = "잘못된 요청 (입력값 누락 등)"),
-            @ApiResponse(responseCode = "403", description = "이메일 인증 미완료")
+            @ApiResponse(responseCode = "400", description = "입력값 유효성 검증 실패"),
+            @ApiResponse(responseCode = "403", description = "이메일 인증 미완료"),
+            @ApiResponse(responseCode = "409", description = "이미 가입된 이메일")
     })
     public ResponseEntity<Void> signup(@RequestBody @Valid SignupRequest request) {
         authService.signup(request);
@@ -91,8 +93,15 @@ public class AuthController {
      * @return 성공 시 200 OK (캐시 제어 헤더 포함)
      */
     @GetMapping("/check-email")
-    @Operation(summary = "이메일 중복 체크", description = "입력한 이메일이 이미 가입되어 있는지 확인합니다. (사용 가능 시 200 OK)")
-    public ResponseEntity<Void> checkEmail(@RequestParam String email) {
+    @Operation(
+            summary = "이메일 중복 확인",
+            description = "입력한 이메일이 사용 가능한지 확인합니다. 회원가입 폼에서 포커스를 잃을 때 실시간으로 호출하기 좋습니다."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "사용 가능한 이메일"),
+            @ApiResponse(responseCode = "409", description = "이미 사용 중인 이메일")
+    })
+    public ResponseEntity<Void> checkEmail(@RequestParam @Parameter(description = "중복 확인할 이메일", example = "user@example.com") String email) {
         authService.checkEmailDuplication(email);
 
         return ResponseEntity.ok()
@@ -108,8 +117,15 @@ public class AuthController {
      * @return Refresh Token을 포함한 응답 바디 및 Access Token을 포함한 헤더
      */
     @PostMapping("/login")
-    @Operation(summary = "로그인", description = "이메일과 비밀번호로 로그인합니다. AccessToken은 Header(Authorization)로, RefreshToken은 Body로 반환됩니다.")
-    public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest request) {
+    @Operation(
+            summary = "로그인 (토큰 발급)",
+            description = "성공 시 Access Token은 'Authorization' 헤더(Bearer)로, Refresh Token은 Body로 전달됩니다."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "로그인 성공"),
+            @ApiResponse(responseCode = "401", description = "ID/PW 불일치")
+    })
+    public ResponseEntity<LoginResponse> login(@RequestBody @Valid LoginRequest request) {
         TokenPair tokens = authService.login(request);
 
         return ResponseEntity.ok()
@@ -124,8 +140,15 @@ public class AuthController {
      * @return 새로운 Access Token(헤더) 및 Refresh Token(바디)
      */
     @PostMapping("/refresh")
-    @Operation(summary = "토큰 갱신", description = "만료된 AccessToken을 RefreshToken을 이용해 재발급받습니다.")
-    public ResponseEntity<LoginResponse> refresh(@RequestBody RefreshRequest request) {
+    @Operation(
+            summary = "토큰 갱신 (Refresh)",
+            description = "Access Token이 만료된 경우 호출합니다. 새로운 Access Token은 헤더로, Refresh Token은 Body로 반환됩니다."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "재발급 성공"),
+            @ApiResponse(responseCode = "401", description = "Refresh Token 만료 또는 유효하지 않음")
+    })
+    public ResponseEntity<LoginResponse> refresh(@RequestBody @Valid RefreshRequest request) {
         TokenPair tokenPair = authService.refreshAccessToken(request.getRefreshToken());
         return ResponseEntity.ok()
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + tokenPair.getAccessToken())
@@ -139,8 +162,15 @@ public class AuthController {
      * @return 성공 시 200 OK
      */
     @PostMapping("/logout")
-    @Operation(summary = "로그아웃", description = "서버 측 세션(Redis 등)에서 리프레시 토큰을 제거하여 로그아웃 처리합니다.")
-    public ResponseEntity<Void> logout(@RequestParam Long userId) {
+    @Operation(
+            summary = "로그아웃",
+            description = "서버 측 Refresh Token을 무효화합니다. 앱 내 저장된 모든 토큰을 삭제하고 로그인 화면으로 이동하세요."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "로그아웃 성공"),
+            @ApiResponse(responseCode = "401", description = "인증 실패")
+    })
+    public ResponseEntity<Void> logout(@RequestParam @Parameter(description = "유저 ID", example = "1") Long userId) {
         authService.logout(userId);
         return ResponseEntity.ok().build();
     }
@@ -153,8 +183,11 @@ public class AuthController {
      * @return 성공 시 200 OK
      */
     @PostMapping("/find/send-code")
-    @Operation(summary = "[비밀번호찾기용] 인증번호 발송", description = "비밀번호 찾기 전용입니다. **가입되지 않은 이메일이라면 404 에러**를 반환합니다.")
-    public ResponseEntity<Void> sendFindCode(@RequestBody EmailSendRequest request) {
+    @Operation(
+            summary = "비밀번호 찾기 - 인증코드 발송",
+            description = "비밀번호 재설정을 위해 가입된 이메일로 6자리 인증 코드를 보냅니다."
+    )
+    public ResponseEntity<Void> sendFindCode(@RequestBody @Valid EmailSendRequest request) {
         emailVerificationService.sendCodeForFinding(request.getEmail());
         return ResponseEntity.ok().build();
     }
@@ -166,8 +199,11 @@ public class AuthController {
      * @return 성공 시 200 OK
      */
     @PostMapping("/find/password")
-    @Operation(summary = "임시 비밀번호 발급", description = "이메일 인증 완료 후 임시 비밀번호를 해당 이메일로 발송합니다.")
-    public ResponseEntity<Void> sendTemporaryPassword(@RequestBody EmailVerifyRequest request) {
+    @Operation(
+            summary = "비밀번호 찾기 - 임시 비밀번호 발급",
+            description = "인증 코드 검증 후, 해당 이메일로 임시 비밀번호를 전송합니다."
+    )
+    public ResponseEntity<Void> sendTemporaryPassword(@RequestBody @Valid EmailVerifyRequest request) {
         authService.sendTemporaryPassword(request);
         return ResponseEntity.ok().build();
     }
@@ -180,8 +216,11 @@ public class AuthController {
      * @return 성공 시 200 OK
      */
     @PostMapping("/signup/send-code")
-    @Operation(summary = "[회원가입용] 인증번호 발송", description = "회원가입 전용입니다. **이미 가입된 이메일이라면 409 에러**를 반환합니다.")
-    public ResponseEntity<Void> sendSignUpCode(@RequestBody EmailSendRequest request) {
+    @Operation(
+            summary = "회원가입 - 인증코드 발송",
+            description = "신규 가입을 위해 입력한 이메일로 6자리 인증 코드를 보냅니다. 중복 이메일은 409를 반환합니다."
+    )
+    public ResponseEntity<Void> sendSignUpCode(@RequestBody @Valid EmailSendRequest request) {
         emailVerificationService.sendCodeForSignUp(request.getEmail());
         return ResponseEntity.ok().build();
     }
@@ -194,12 +233,15 @@ public class AuthController {
      * @return 성공 시 200 OK
      */
     @PostMapping("/email/verify")
-    @Operation(summary = "이메일 인증번호 확인", description = "발송된 6자리 코드를 검증합니다. 성공 시 해당 이메일은 15분간 '인증됨' 상태가 유지됩니다.")
+    @Operation(
+            summary = "이메일 인증 코드 검증",
+            description = "사용자가 입력한 6자리 코드가 일치하는지 확인합니다. 성공 시 가입 처리가 가능해집니다."
+    )
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "인증 성공"),
-            @ApiResponse(responseCode = "400", description = "잘못된 인증번호 또는 만료된 번호")
+            @ApiResponse(responseCode = "400", description = "코드 불일치 또는 만료")
     })
-    public ResponseEntity<Void> verifyEmailCode(@RequestBody EmailVerifyRequest request) {
+    public ResponseEntity<Void> verifyEmailCode(@RequestBody @Valid EmailVerifyRequest request) {
         emailVerificationService.verifyCode(request.getEmail(), request.getCode());
         return ResponseEntity.ok().build();
     }

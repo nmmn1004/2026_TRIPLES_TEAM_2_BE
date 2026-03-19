@@ -6,8 +6,8 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-@Schema(description = "로그인 응답")
+@Schema(description = "로그인 응답 정보")
 public class LoginResponse {
-    @Schema(description = "리프레시 토큰")
+    @Schema(description = "리프레시 토큰 (Access Token 만료 시 재발급을 위해 사용)", nullable = false)
     private String refreshToken;
 }

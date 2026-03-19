@@ -28,27 +28,23 @@ import java.util.stream.Collectors;
         description = """
     ## 📑 가계부(Ledger) API
     
-    사용자의 지출 및 수입 내역을 관리합니다. 모든 내역은 생성 시 자동으로 관련 **저축 목표(Goal)**의 현재 달성액에 반영됩니다.
+    사용자의 지출 및 수입 내역을 기록하고 목표 달성액에 반영합니다.
     
     ---
     
-    ### ⚙️ 주요 기능
-    - **내역 저장**: 지출/수입 금액, 카테고리, 날짜를 입력합니다.
-    - **자동 연동**: '저축' 카테고리로 입력된 지출은 사용자의 활성화된 목표 금액을 증가시킵니다.
-    - **내역 관리**: 특정 내역의 수정 및 삭제가 가능하며, 변경 사항은 목표 금액에도 즉시 반영됩니다.
+    ### 🔑 주요 특징
+    - **목표 자동 연동**: '저축' 카테고리로 지출을 기록하면 활성 목표 금액에 자동 합산됩니다.
+    - **실시간 갱신**: 내역 수정 또는 삭제 시 연동된 목표 데이터도 즉시 재계산됩니다.
     
     ### 🧩 Flutter / Retrofit 예시
     ```dart
-    @RestApi(baseUrl: "https://your-api.com/api/ledger")
+    @RestApi(baseUrl: "https://api.com/api/ledger")
     abstract class LedgerApi {
       @POST("/add")
       Future<void> addLedger(@Body LedgerRequest request);
       
       @GET("/list")
-      Future<List<Ledger>> getAllLedgers();
-      
-      @PATCH("/{id}")
-      Future<void> updateLedger(@Path("id") int id, @Body LedgerRequest request);
+      Future<List<Ledger>> getLedgers();
     }
     ```
     """
@@ -65,10 +61,13 @@ public class LedgerController {
      * @return 저장 성공 시 OK 상태를 포함하는 ResponseEntity.
      */
     @PostMapping("/add")
-    @Operation(summary = "가계부 내역 저장", description = "로그인된 유저의 가계부 내역을 저장하고 관련 목표에 자동 반영합니다.")
+    @Operation(
+            summary = "가계부 내역 추가",
+            description = "새로운 지출/수입 내역을 저장합니다. '저축' 카테고리 선택 시 활성화된 목표 금액에 반영됩니다."
+    )
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "저장 성공"),
-            @ApiResponse(responseCode = "401", description = "인증 실패", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+            @ApiResponse(responseCode = "401", description = "인증 실패 (토큰 만료 등)")
     })
     public ResponseEntity<Void> addLedger(
             @AuthenticationPrincipal Long userId,
@@ -84,7 +83,10 @@ public class LedgerController {
      * @return 사용자의 가계부 내역 목록을 포함하는 ResponseEntity.
      */
     @GetMapping("/list")
-    @Operation(summary = "가계부 내역 조회", description = "현재 로그인된 유저의 모든 가계부 내역을 조회합니다.")
+    @Operation(
+            summary = "가계부 내역 전체 조회",
+            description = "로그인한 사용자의 모든 지출/수입 내역을 리스트로 반환합니다."
+    )
     public ResponseEntity<List<Ledger>> getAllLedgers(
             @AuthenticationPrincipal Long userId
     ) {
@@ -101,13 +103,16 @@ public class LedgerController {
      * @return 수정 성공 시 OK 상태를 포함하는 ResponseEntity.
      */
     @PatchMapping("/{id}")
-    @Operation(summary = "가계부 내역 수정", description = "특정 ID의 가계부 내역을 수정합니다. 수정된 금액은 연동된 목표에도 반영됩니다.")
+    @Operation(
+            summary = "가계부 내역 수정",
+            description = "기존 내역의 금액, 날짜, 카테고리 등을 수정합니다. 금액 수정 시 연동된 목표치도 함께 변경됩니다."
+    )
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "수정 성공"),
-            @ApiResponse(responseCode = "404", description = "내역을 찾을 수 없음", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+            @ApiResponse(responseCode = "200", description = "수정 완료"),
+            @ApiResponse(responseCode = "404", description = "해당 ID의 내역을 찾을 수 없음")
     })
     public ResponseEntity<Void> updateLedger(
-            @PathVariable("id") Long id,
+            @PathVariable("id") @Parameter(description = "가계부 내역 ID", example = "101") Long id,
             @AuthenticationPrincipal Long userId,
             @RequestBody LedgerRequest request
     ) {
@@ -123,13 +128,16 @@ public class LedgerController {
      * @return 삭제 성공 시 OK 상태를 포함하는 ResponseEntity.
      */
     @DeleteMapping("/{id}")
-    @Operation(summary = "가계부 내역 삭제", description = "특정 ID의 가계부 내역을 삭제합니다. 삭제된 금액만큼 연동된 목표 금액이 차감됩니다.")
+    @Operation(
+            summary = "가계부 내역 삭제",
+            description = "내역을 삭제합니다. '저축' 내역인 경우 목표 달성액에서 해당 금액만큼 차감됩니다."
+    )
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "삭제 성공"),
-            @ApiResponse(responseCode = "404", description = "내역을 찾을 수 없음", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+            @ApiResponse(responseCode = "200", description = "삭제 완료"),
+            @ApiResponse(responseCode = "404", description = "해당 ID의 내역을 찾을 수 없음")
     })
     public ResponseEntity<Void> deleteLedger(
-            @PathVariable("id") Long id,
+            @PathVariable("id") @Parameter(description = "가계부 내역 ID", example = "101") Long id,
             @AuthenticationPrincipal Long userId
     ) {
         ledgerService.delete(id);

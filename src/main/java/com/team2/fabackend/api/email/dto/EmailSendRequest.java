@@ -8,11 +8,11 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @NoArgsConstructor
-@Schema(description = "이메일 인증번호 발송 요청 객체")
+@Schema(description = "이메일 인증번호 발송 요청 정보")
 public class EmailSendRequest {
 
     @NotBlank(message = "이메일은 필수 입력값입니다.")
     @Email(message = "올바른 이메일 형식이 아닙니다.")
-    @Schema(description = "인증번호를 받을 이메일", example = "test@test.com")
+    @Schema(description = "인증번호를 받을 이메일 계정", example = "user@example.com", nullable = false)
     private String email;
 }

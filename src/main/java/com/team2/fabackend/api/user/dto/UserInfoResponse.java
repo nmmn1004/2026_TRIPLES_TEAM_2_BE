@@ -15,25 +15,25 @@ import java.time.LocalDate;
 @Getter
 @Builder
 @AllArgsConstructor
-@Schema(description = "유저 정보")
+@Schema(description = "회원 정보 조회 응답 정보")
 public class UserInfoResponse {
-    @Schema(description = "유저 값")
+    @Schema(description = "사용자 고유 ID", example = "1")
     private Long id;
 
-    @Schema(description = "유저 이메일")
+    @Schema(description = "사용자 이메일", example = "user@example.com")
     private String email;
 
-    @Schema(description = "유저 소셜 타입")
+    @Schema(description = "소셜 로그인 타입 (KAKAO, NAVER 등)", example = "NONE")
     @Enumerated(EnumType.STRING)
     private SocialType socialType;
 
-    @Schema(description = "유저 별명")
+    @Schema(description = "사용자 닉네임", example = "무말랭이")
     private String nickName;
 
-    @Schema(description = "유저 생년월일")
+    @Schema(description = "사용자 생년월일", example = "2002-04-01")
     private LocalDate birth;
 
-    @Schema(description = "유저 역할")
+    @Schema(description = "사용자 권한 (USER, ADMIN)", example = "USER")
     private UserType userType;
 
     public static UserInfoResponse from(User user) {

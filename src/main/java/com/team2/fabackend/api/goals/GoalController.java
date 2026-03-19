@@ -28,24 +28,20 @@ import java.util.Map;
         description = """
     ## 🎯 저축 목표(Goal) API
     
-    사용자가 설정한 저축 목표(예: 자동차 구매, 여행 등)를 관리하고 달성도를 분석합니다.
+    사용자가 설정한 저축 목표를 생성하고 달성 상태를 분석합니다.
     
     ---
     
-    ### ⚙️ 주요 기능
-    - **목표 생성**: 제목, 목표 금액, 종료 날짜를 입력하여 목표를 생성합니다.
-    - **진행 중인 목표**: 종료 날짜가 지나지 않은 목표만 필터링하여 조회합니다.
-    - **달성 분석**: 현재까지의 저축액(가계부 연동)을 기반으로 목표 달성률을 계산합니다.
+    ### 🔑 주요 특징
+    - **가계부 연동**: 가계부에 기록된 '저축' 내역이 목표 달성률에 실시간 반영됩니다.
+    - **AI 분석**: 현재 소비 속도로 목표일 내 달성 가능한지를 분석합니다.
     
     ### 🧩 Flutter / Retrofit 예시
     ```dart
-    @RestApi(baseUrl: "https://your-api.com/api/goals")
+    @RestApi(baseUrl: "https://api.com/api/goals")
     abstract class GoalApi {
       @POST("")
       Future<int> createGoal(@Body GoalRequest request, @Query("userId") int userId);
-      
-      @GET("/active/{userId}")
-      Future<Map<String, dynamic>> getActiveGoals(@Path("userId") int userId);
       
       @GET("/{id}/analysis")
       Future<GoalAnalysisResponse> analyzeGoal(@Path("id") int goalId);
@@ -64,12 +60,15 @@ public class GoalController {
      * @return 생성된 저축 목표의 ID
      */
     @PostMapping
-    @Operation(summary = "저축 목표 생성", description = "새로운 저축 목표를 생성합니다.")
+    @Operation(
+            summary = "저축 목표 생성",
+            description = "새로운 저축 목표를 생성합니다. 생성된 목표의 고유 ID가 반환됩니다."
+    )
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "생성 성공 (ID 반환)"),
-            @ApiResponse(responseCode = "404", description = "유저 정보 없음", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+            @ApiResponse(responseCode = "404", description = "유저 정보를 찾을 수 없음")
     })
-    public ResponseEntity<Long> create(@RequestBody GoalRequest request, @RequestParam Long userId) {
+    public ResponseEntity<Long> create(@RequestBody GoalRequest request, @RequestParam @Parameter(description = "유저 ID", example = "1") Long userId) {
         Long goalId = goalService.createGoal(request, userId);
         return ResponseEntity.ok(goalId);
     }
@@ -80,7 +79,10 @@ public class GoalController {
      * @return 저축 목표 리스트를 포함한 응답 객체
      */
     @GetMapping("/list")
-    @Operation(summary = "전체 목표 조회", description = "사용자의 모든 저축 목표(종료된 것 포함)를 조회합니다.")
+    @Operation(
+            summary = "전체 목표 목록 조회",
+            description = "과거에 종료된 목표를 포함하여 사용자의 모든 저축 목표 리스트를 조회합니다."
+    )
     public ResponseEntity<Map<String, Object>> getGoalList() {
         List<GoalResponse> data = goalService.findAllGoals();
 
@@ -98,8 +100,11 @@ public class GoalController {
      * @return 활성화된 저축 목표 리스트를 포함한 응답 객체
      */
     @GetMapping("/active/{userId}")
-    @Operation(summary = "진행 중인 목표 조회", description = "현재 종료 날짜가 지나지 않은 활성화된 저축 목표만 조회합니다.")
-    public ResponseEntity<Map<String, Object>> getActiveGoals(@PathVariable Long userId) {
+    @Operation(
+            summary = "진행 중인 목표 조회",
+            description = "현재 종료일이 지나지 않은 활성화된 저축 목표들만 필터링하여 조회합니다."
+    )
+    public ResponseEntity<Map<String, Object>> getActiveGoals(@PathVariable @Parameter(description = "유저 ID", example = "1") Long userId) {
         List<GoalResponse> data = goalService.findActiveGoals(userId);
 
         Map<String, Object> response = new HashMap<>();
@@ -117,12 +122,15 @@ public class GoalController {
      * @return 성공 시 200 OK
      */
     @PatchMapping("/{id}")
-    @Operation(summary = "목표 수정", description = "기존 저축 목표의 정보를 수정합니다.")
+    @Operation(
+            summary = "목표 정보 수정",
+            description = "목표 금액, 마감일, 제목 등 기존 목표의 상세 정보를 수정합니다."
+    )
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "수정 완료"),
-            @ApiResponse(responseCode = "404", description = "목표를 찾을 수 없음", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+            @ApiResponse(responseCode = "404", description = "해당 목표를 찾을 수 없음")
     })
-    public ResponseEntity<Void> update(@PathVariable Long id, @RequestBody GoalRequest request) {
+    public ResponseEntity<Void> update(@PathVariable @Parameter(description = "목표 ID", example = "10") Long id, @RequestBody GoalRequest request) {
         goalService.updateGoal(id, request);
         return ResponseEntity.ok().build();
     }
@@ -134,12 +142,11 @@ public class GoalController {
      * @return 성공 시 200 OK
      */
     @DeleteMapping("/{id}")
-    @Operation(summary = "목표 삭제", description = "저축 목표를 삭제합니다.")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "삭제 완료"),
-            @ApiResponse(responseCode = "404", description = "목표를 찾을 수 없음", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
-    })
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
+    @Operation(
+            summary = "목표 삭제",
+            description = "저축 목표를 삭제합니다. 연동된 가계부 데이터는 삭제되지 않으나 달성도 계산에서 제외됩니다."
+    )
+    public ResponseEntity<Void> delete(@PathVariable @Parameter(description = "목표 ID", example = "10") Long id) {
         goalService.deleteGoal(id);
         return ResponseEntity.ok().build();
     }
@@ -151,12 +158,15 @@ public class GoalController {
      * @return 분석 결과 정보가 담긴 DTO
      */
     @GetMapping("/{id}/analysis")
-    @Operation(summary = "목표 달성 분석", description = "해당 목표의 목표 금액 대비 현재 달성액과 달성률을 분석합니다.")
+    @Operation(
+            summary = "목표 AI 달성 분석",
+            description = "해당 목표의 현재 달성 속도를 분석하여 예상 성공률과 조언 메시지를 제공합니다."
+    )
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "분석 성공", content = @Content(schema = @Schema(implementation = GoalAnalysisResponse.class))),
-            @ApiResponse(responseCode = "404", description = "목표를 찾을 수 없음", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+            @ApiResponse(responseCode = "200", description = "분석 완료"),
+            @ApiResponse(responseCode = "404", description = "해당 목표를 찾을 수 없음")
     })
-    public ResponseEntity<GoalAnalysisResponse> analyze(@PathVariable Long id) {
+    public ResponseEntity<GoalAnalysisResponse> analyze(@PathVariable @Parameter(description = "목표 ID", example = "10") Long id) {
         GoalAnalysisResponse analysis = goalService.analyzeGoal(id);
         return ResponseEntity.ok(analysis);
     }

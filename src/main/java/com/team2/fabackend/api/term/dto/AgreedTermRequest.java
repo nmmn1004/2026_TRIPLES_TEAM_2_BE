@@ -9,6 +9,7 @@ import java.util.List;
 
 @Getter
 @NoArgsConstructor
+@Schema(description = "약관 동의 요청 정보")
 public class AgreedTermRequest {
     @Schema(
             description = "동의한 약관 ID 목록",
