@@ -7,6 +7,7 @@ import com.team2.fabackend.api.term.dto.TermSaveRequest;
 import com.team2.fabackend.api.term.dto.UserTermStatusResponse;
 import com.team2.fabackend.service.userTerm.UserTermService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
