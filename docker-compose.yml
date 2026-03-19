@@ -65,7 +65,7 @@ services:
       PROMPT_ADVICE_USER: file:/app/prompts/advice/generateAdvice.st
       PROMPT_AIREPORT_SYSTEM: file:/app/prompts/aiReport/generateAiReportSystem.st
       PROMPT_AIREPORT_USER: file:/app/prompts/aiReport/generateAiReport.st
-      SPRING_PROFILES_ACTIVE: dev
+      SPRING_PROFILES_ACTIVE: prod
       SPRING_DATASOURCE_URL: ${DB_JDBC_URL}
       SPRING_DATASOURCE_USERNAME: ${DB_USER}
       SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
