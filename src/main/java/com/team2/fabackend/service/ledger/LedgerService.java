@@ -6,6 +6,7 @@ import com.team2.fabackend.domain.goals.GoalRepository;
 import com.team2.fabackend.domain.ledger.Ledger;
 import com.team2.fabackend.domain.ledger.LedgerRepository;
 import com.team2.fabackend.domain.ledger.TransactionType;
+import com.team2.fabackend.domain.user.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,7 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 import com.team2.fabackend.service.user.UserReader;
-...
+
 @Service
 @RequiredArgsConstructor
 @Transactional

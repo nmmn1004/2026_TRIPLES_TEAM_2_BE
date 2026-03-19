@@ -98,7 +98,7 @@ public class GoalService {
     public List<GoalResponse> findActiveGoals(Long userId) {
         LocalDate today = LocalDate.now();
 
-        return goalRepository.findAllByUserId(userId).stream()
+        return goalRepository.findAllByUser_Id(userId).stream()
                 .filter(goal -> !today.isBefore(goal.getStartDate()) && !today.isAfter(goal.getEndDate()))
                 .map(goal -> {
                     Long totalSpent = goal.getCurrentAmount();
