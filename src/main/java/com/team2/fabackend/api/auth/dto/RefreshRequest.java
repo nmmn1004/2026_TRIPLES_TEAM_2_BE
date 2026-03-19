@@ -7,9 +7,9 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @NoArgsConstructor
-@Schema(description = "자동 로그인 요청")
+@Schema(description = "토큰 재발급 요청 정보")
 public class RefreshRequest {
-    @Schema(description = "갱신토큰", example = "string")
+    @Schema(description = "리프레시 토큰", example = "eyJhbGciOiJIUzI1NiJ9...", nullable = false)
     @NotBlank
     private String refreshToken;
 }

@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
+@Schema(description = "AI 리포트 메일 발송 요청")
 public class AiReportRequest {
     @Schema(
             description = "프리미엄 리포트 수령 이메일 주소",

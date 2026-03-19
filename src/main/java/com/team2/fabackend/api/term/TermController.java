@@ -34,49 +34,27 @@ import java.util.List;
 @Tag(
         name = "Term",
         description = """
-    ## 📜 약관 관리 API  
-    서비스 내 **약관 정보 조회 및 동의 처리 기능**을 제공합니다.  
+    ## 📜 약관 관리(Term) API
+    
+    서비스 이용을 위한 필수 및 선택 약관을 조회하고 동의 여부를 관리합니다.
     
     ---
     
-    ### ✅ 주요 기능
-    1. 현재 서비스에서 사용 중인 **유효한 약관 목록 조회 (/active)**
-    2. 로그인 사용자의 **약관 동의 현황 조회 (/me)**
-    3. 사용자의 **약관 동의 처리 (/agree)**
+    ### 🔑 주요 특징
+    - **약관 버전 관리**: 유효한(active) 약관 목록을 실시간으로 가져옵니다.
+    - **동의 현황**: 사용자의 개별 약관 동의 상태를 조회할 수 있습니다.
     
-    ---
-    
-    ### ⚙️ 공통 요청 조건
-    - `/terms/me`, `/terms/agree` API는 **로그인 필요**
-    - `Authorization: Bearer {accessToken}` 헤더 필수  
-      → Retrofit `@Header("Authorization")` 형태로 추가하세요.
-    
-    ---
-    
-    ### 🧩 Retrofit 예시 코드 (AOS)
-    ```kotlin
-    interface TermService {
-        // 1️⃣ 유효한 약관 목록 조회
-        @GET("/terms/active")
-        suspend fun getActiveTerms(): List<TermInfoResponse>
-    
-        // 2️⃣ 내 약관 동의 현황 조회
-        @GET("/terms/me")
-        suspend fun getMyTermStatus(): List<UserTermStatusResponse>
-    
-        // 3️⃣ 약관 동의 처리
-        @POST("/terms/agree")
-        suspend fun agreeTerms(
-            @Body request: AgreedTermRequest
-        ): Response<Unit>
+    ### 🧩 Flutter / Retrofit 예시
+    ```dart
+    @RestApi(baseUrl: "https://api.com/terms")
+    abstract class TermApi {
+      @GET("/active")
+      Future<List<TermInfoResponse>> getActiveTerms();
+      
+      @POST("/agree")
+      Future<void> agreeTerms(@Body AgreedTermRequest request);
     }
     ```
-    
-    ---
-    ### ⚠️ 유의사항
-    - **필수 약관(required = true)** 미동의 시 서버에서 400 에러 반환  
-    - 이미 동의한 약관 ID를 재전송해도 무시됩니다  
-    - `effectiveAt`은 프론트에서 약관 최신 여부를 판단할 때 사용하세요  
     """
 )
 public class TermController {
@@ -89,46 +67,11 @@ public class TermController {
      */
     @GetMapping("/active")
     @Operation(
-            summary = "현재 유효한 약관 목록 조회",
-            description = """
-        현재 서비스에서 활성화된(**유효한**) 약관 목록을 조회합니다.  
-        
-        ---
-        
-        ### 🚀 요청 예시
-        ```kotlin
-        val response = termService.getActiveTerms()
-        ```
-        
-        ### 📦 응답 예시
-        ```json
-        [
-          {
-            "id": 1,
-            "title": "서비스 이용약관",
-            "version": "v2.0",
-            "required": true,
-            "content": "<p>...</p>",
-            "effectiveAt": "2026-02-01"
-          }
-        ]
-        ```
-        
-        - `required = true` → 필수 동의 항목  
-        - `required = false` → 선택 동의 항목
-        """
+            summary = "유효 약관 목록 조회",
+            description = "현재 서비스에서 시행 중인 최신 약관 목록을 조회합니다. 회원가입 화면의 약관 리스트 생성 시 사용하세요."
     )
     @ApiResponses({
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "현재 유효한 약관 목록 조회 성공",
-                    content = @Content(schema = @Schema(implementation = TermInfoResponse.class))
-            ),
-            @ApiResponse(
-                    responseCode = "500",
-                    description = "서버 내부 오류 (S001)",
-                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))
-            )
+            @ApiResponse(responseCode = "200", description = "약관 목록 조회 성공")
     })
     public ResponseEntity<List<TermInfoResponse>> getActiveTerms() {
         return ResponseEntity.ok(userTermService.getActiveTerms());
@@ -143,58 +86,11 @@ public class TermController {
     @GetMapping("/me")
     @Operation(
             summary = "내 약관 동의 현황 조회",
-            description = """
-        로그인한 사용자의 약관 동의 상태를 조회합니다.  
-        
-        주로 **마이페이지 약관 관리 화면** 또는  
-        **약관 재동의 여부 판단 로직**에서 사용됩니다.
-        
-        ---
-        
-        ### 🚀 요청 예시
-        ```kotlin
-        val response = termService.getMyTermStatus()
-        ```
-        
-        ### 📦 응답 예시
-        ```json
-        [
-          {
-            "termId": 1,
-            "title": "서비스 이용약관",
-            "version": "v2.0",
-            "required": true,
-            "agreed": true,
-            "agreedAt": "2026-02-01T10:00:00"
-          }
-        ]
-        ```
-        
-        - `agreed = true` → 이미 동의함  
-        - `agreedAt` 값은 동의한 일시
-        """
+            description = "로그인한 사용자가 어떤 약관에 언제 동의했는지 확인합니다. 마이페이지 약관 설정 화면에서 사용하세요."
     )
     @ApiResponses({
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "내 약관 동의 현황 조회 성공",
-                    content = @Content(schema = @Schema(implementation = UserTermStatusResponse.class))
-            ),
-            @ApiResponse(
-                    responseCode = "401",
-                    description = "인증 실패 (T 계열 토큰 에러, 로그인 필요)",
-                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))
-            ),
-            @ApiResponse(
-                    responseCode = "404",
-                    description = "사용자를 찾을 수 없음 (U001)",
-                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))
-            ),
-            @ApiResponse(
-                    responseCode = "500",
-                    description = "서버 내부 오류 (S001)",
-                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))
-            )
+            @ApiResponse(responseCode = "200", description = "조회 성공"),
+            @ApiResponse(responseCode = "401", description = "인증 실패 (토큰 만료)")
     })
     public ResponseEntity<List<UserTermStatusResponse>> getUserTermStatus(
             @AuthenticationPrincipal Long userId
@@ -212,58 +108,11 @@ public class TermController {
     @PostMapping("/agree")
     @Operation(
             summary = "약관 동의 처리",
-            description = """
-        사용자가 약관 동의 버튼을 눌렀을 때 호출합니다.  
-        
-        서버에서 유효성 검사(필수 약관 포함)를 수행하며,  
-        **이미 동의한 약관은 무시됩니다.**
-        
-        ---
-        
-        ### 🚀 요청 예시
-        ```kotlin
-        val request = AgreedTermRequest(listOf(1, 2, 3))
-        termService.agreeTerms(request)
-        ```
-        
-        ### 📦 요청 본문
-        ```json
-        {
-          "agreedTermIds": [1, 2, 3]
-        }
-        ```
-        
-        ### ⚠️ 주의
-        - 필수 약관을 미포함 시 400 Bad Request  
-        - 로그인 필요 (`Authorization` 헤더 필수)
-        """
+            description = "사용자가 약관 동의 체크박스를 선택하고 완료했을 때 호출합니다."
     )
     @ApiResponses({
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "약관 동의 처리 성공 (이미 동의한 약관은 무시)",
-                    content = @Content
-            ),
-            @ApiResponse(
-                    responseCode = "400",
-                    description = "필수 약관 미동의 또는 유효하지 않은 약관 ID (S002/S003 등)",
-                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))
-            ),
-            @ApiResponse(
-                    responseCode = "401",
-                    description = "인증 실패 (T 계열 토큰 에러, 로그인 필요)",
-                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))
-            ),
-            @ApiResponse(
-                    responseCode = "404",
-                    description = "사용자를 찾을 수 없음 (U001)",
-                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))
-            ),
-            @ApiResponse(
-                    responseCode = "500",
-                    description = "서버 내부 오류 (S001)",
-                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))
-            )
+            @ApiResponse(responseCode = "200", description = "동의 처리 완료"),
+            @ApiResponse(responseCode = "400", description = "유효하지 않은 약관 ID 포함")
     })
     public ResponseEntity<Void> agreeTerms(
             @AuthenticationPrincipal Long userId,
@@ -281,32 +130,9 @@ public class TermController {
      */
     @PostMapping
     @Operation(
-            summary = "[ADMIN] 약관 생성",
-            description = "관리자가 새로운 약관을 등록할 때 사용합니다."
+            summary = "[ADMIN] 새 약관 등록",
+            description = "시스템 관리자가 새로운 약관을 등록합니다. (관리자 전용)"
     )
-    @PreAuthorize("hasRole('ADMIN')")
-    @ApiResponses({
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "약관 생성 성공",
-                    content = @Content(schema = @Schema(implementation = TermInfoResponse.class))
-            ),
-            @ApiResponse(
-                    responseCode = "400",
-                    description = "잘못된 입력값 (S002) - 필드 검증 실패 등",
-                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))
-            ),
-            @ApiResponse(
-                    responseCode = "403",
-                    description = "관리자 권한 없음",
-                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))
-            ),
-            @ApiResponse(
-                    responseCode = "500",
-                    description = "서버 내부 오류 (S001)",
-                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))
-            )
-    })
     public ResponseEntity<TermInfoResponse> createTerm(
             @Valid @RequestBody TermSaveRequest request
     ) {
@@ -322,39 +148,11 @@ public class TermController {
      */
     @PatchMapping
     @Operation(
-            summary = "[ADMIN] 약관 수정",
-            description = "특정 약관의 내용을 수정합니다. (관리자 전용)"
+            summary = "[ADMIN] 약관 정보 수정",
+            description = "등록된 약관의 제목이나 내용을 수정합니다. (관리자 전용)"
     )
-    @PreAuthorize("hasRole('ADMIN')")
-    @ApiResponses({
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "약관 수정 성공",
-                    content = @Content(schema = @Schema(implementation = TermInfoResponse.class))
-            ),
-            @ApiResponse(
-                    responseCode = "400",
-                    description = "잘못된 입력값 (S002)",
-                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))
-            ),
-            @ApiResponse(
-                    responseCode = "403",
-                    description = "관리자 권한 없음",
-                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))
-            ),
-            @ApiResponse(
-                    responseCode = "404",
-                    description = "약관을 찾을 수 없음 (S003 또는 별도 코드)",
-                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))
-            ),
-            @ApiResponse(
-                    responseCode = "500",
-                    description = "서버 내부 오류 (S001)",
-                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))
-            )
-    })
     public ResponseEntity<TermInfoResponse> updateTerm(
-            @RequestParam Long termId,
+            @RequestParam @Parameter(description = "약관 ID", example = "1") Long termId,
             @Valid @RequestBody TermSaveRequest request
     ) {
         return ResponseEntity.ok(userTermService.updateTerm(termId, request));

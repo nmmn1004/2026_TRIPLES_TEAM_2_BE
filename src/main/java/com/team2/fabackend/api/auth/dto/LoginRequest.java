@@ -7,13 +7,13 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @NoArgsConstructor
-@Schema(description = "로그인 요청")
+@Schema(description = "로그인 요청 정보")
 public class LoginRequest {
-    @Schema(description = "이메일", example = "test@test.com")
+    @Schema(description = "사용자 이메일 계정", example = "user@example.com", nullable = false)
     @NotBlank
     private String email;
 
-    @Schema(description = "비밀번호", example = "12341234")
+    @Schema(description = "사용자 비밀번호", example = "password123!", nullable = false)
     @NotBlank
     private String password;
 }

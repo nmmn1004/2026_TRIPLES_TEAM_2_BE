@@ -8,7 +8,7 @@ import java.time.LocalDate;
 
 @Getter
 @AllArgsConstructor
-@Schema(description = "유저 정보")
+@Schema(description = "회원 탈퇴 요청 정보")
 public class UserDeleteRequest {
     @Schema(description = "사유", example = "너무 어려워요")
     private String reason;

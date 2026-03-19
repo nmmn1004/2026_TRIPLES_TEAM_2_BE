@@ -8,11 +8,11 @@ import java.time.LocalDate;
 
 @Getter
 @AllArgsConstructor
-@Schema(description = "유저 정보")
+@Schema(description = "회원 정보 수정 요청 정보")
 public class UserInfoRequest {
-    @Schema(description = "유저 별명", example = "null")
+    @Schema(description = "수정할 닉네임", example = "새로운무말랭이")
     private String nickName;
 
-    @Schema(description = "유저 생년월일", example = "null")
+    @Schema(description = "수정할 생년월일 (yyyy-MM-dd)", example = "2002-04-01")
     private LocalDate birth;
 }

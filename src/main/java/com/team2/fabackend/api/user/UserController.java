@@ -34,38 +34,32 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/users")
 @RequiredArgsConstructor
 @SecurityRequirement(name = "JWT")
-@Tag(name = "User", description = """
-    ## 유저 관리 API
-    사용자 정보 조회, 수정, 비밀번호 변경 및 탈퇴를 제공합니다.
+@Tag(
+        name = "User",
+        description = """
+    ## 👤 사용자 관리(User) API
     
-    ### 💡 AOS (Kotlin) 요청 가이드
-    모든 수정/탈퇴 작업은 **비밀번호 인증(Step 1)** 후 **응답 헤더**로 발급받은 토큰을 사용해야 합니다.
+    프로필 조회, 수정 및 보안 인증을 통한 비밀번호 변경, 탈퇴 기능을 제공합니다.
     
-    #### 1. Step 1: 비밀번호 인증 및 토큰 추출
-    인증 성공 시 토큰은 Body가 아닌 **Response Header**에 담겨 있습니다.
-    ```kotlin
-    interface UserService {
-        @POST("/users/me/password/verify")
-        fun verifyPassword(@Body request: PasswordVerifyRequest): Call<Response<Void>>
-    }
+    ---
     
-    // 호출 및 헤더 추출 예시
-    val response = userService.verifyPassword(request).execute()
-    val confirmToken = response.headers()["X-Password-Confirm-Token"]
-    ```
+    ### 🔑 주요 특징
+    - **보안 인증**: 프로필 수정/탈퇴 시 `Confirm Token`을 통한 2차 검증 단계가 포함됩니다.
+    - **유연한 조회**: 본인 프로필뿐만 아니라 타 사용자의 공개 프로필 조회도 가능합니다.
     
-    #### 2. Step 2: 획득한 토큰으로 정보 수정/탈퇴
-    추출한 토큰을 다시 요청 헤더(`X-Password-Confirm-Token`)에 담아 보냅니다.
-    ```kotlin
-    interface UserService {
-        @PATCH("/users/me")
-        fun updateProfile(
-            @Header("X-Password-Confirm-Token") token: String,
-            @Body request: UserInfoRequest
-        ): Call<Void>
+    ### 🧩 Flutter / Retrofit 예시
+    ```dart
+    @RestApi(baseUrl: "https://api.com/users")
+    abstract class UserApi {
+      @GET("/me")
+      Future<UserInfoResponse> getMyProfile();
+      
+      @PATCH("/me")
+      Future<void> updateProfile(@Header("X-Password-Confirm-Token") String token, @Body UserInfoRequest request);
     }
     ```
-    """)
+    """
+)
 public class UserController {
     private final UserService userService;
 
@@ -76,7 +70,10 @@ public class UserController {
      * @return 사용자의 정보를 포함한 ResponseEntity
      */
     @GetMapping("/me")
-    @Operation(summary = "자신 회원 정보 조회", description = "AccessToken으로 사용자 조회")
+    @Operation(
+            summary = "내 프로필 정보 조회",
+            description = "현재 로그인된 사용자의 닉네임, 이메일, 생년월일 등 상세 정보를 조회합니다."
+    )
     public ResponseEntity<UserInfoResponse> getCurrentUser(@AuthenticationPrincipal Long userId) {
         return ResponseEntity.ok(userService.getUser(userId));
     }
@@ -88,8 +85,11 @@ public class UserController {
      * @return 사용자의 정보를 포함한 ResponseEntity
      */
     @GetMapping("/{userId}")
-    @Operation(summary = "타인 회원 정보 조회", description = "공개 프로필 정보를 조회합니다.")
-    public ResponseEntity<UserInfoResponse> getUser(@PathVariable Long userId) {
+    @Operation(
+            summary = "타 사용자 프로필 조회",
+            description = "특정 사용자의 공개된 프로필 정보를 조회합니다."
+    )
+    public ResponseEntity<UserInfoResponse> getUser(@PathVariable @Parameter(description = "대상 유저 ID", example = "2") Long userId) {
         return ResponseEntity.ok(userService.getUser(userId));
     }
 
@@ -100,7 +100,10 @@ public class UserController {
      * @return 사용자 정보 페이지를 포함한 ResponseEntity
      */
     @GetMapping
-    @Operation(summary = "전체 유저 페이징 조회")
+    @Operation(
+            summary = "전체 사용자 목록 조회 (관리자용)",
+            description = "전체 사용자 리스트를 페이징하여 조회합니다. (기본 10개씩 역순)"
+    )
     public ResponseEntity<Page<UserInfoResponse>> getAllUsers(
             @PageableDefault(size = 10, sort = "id", direction = Sort.Direction.DESC) Pageable pageable
     ) {
@@ -115,7 +118,14 @@ public class UserController {
      * @return "X-Password-Confirm-Token" 헤더에 확인 토큰을 포함한 ResponseEntity
      */
     @PostMapping("/me/password/verify")
-    @Operation(summary = "비밀번호 확인", description = "응답 헤더(X-Password-Confirm-Token)로 인증 토큰을 발급합니다.")
+    @Operation(
+            summary = "비밀번호 검증 (보안 인증)",
+            description = "정보 수정 전 본인 확인을 위해 비밀번호를 검증합니다. 성공 시 헤더(X-Password-Confirm-Token)로 토큰이 발급됩니다."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "검증 성공 (헤더에서 토큰 추출 필요)"),
+            @ApiResponse(responseCode = "401", description = "비밀번호 불일치")
+    })
     public ResponseEntity<Void> verify(
             @AuthenticationPrincipal Long userId,
             @Valid @RequestBody PasswordRequest.Verify request
@@ -136,13 +146,12 @@ public class UserController {
      */
     @PatchMapping("/me")
     @Operation(
-            summary = "회원 정보 수정",
-            description = "2차 인증 토큰(Confirm Token)이 필요합니다.",
-            security = { @SecurityRequirement(name = "JWT"), @SecurityRequirement(name = "Confirm Token") }
+            summary = "내 프로필 정보 수정",
+            description = "닉네임, 생년월일 등을 수정합니다. 반드시 비밀번호 검증 후 발급받은 'Confirm Token'이 헤더에 포함되어야 합니다."
     )
     public ResponseEntity<Void> updateProfile(
             @AuthenticationPrincipal Long userId,
-            @RequestHeader("X-Password-Confirm-Token") String passwordConfirmToken,
+            @RequestHeader("X-Password-Confirm-Token") @Parameter(description = "비밀번호 검증 후 받은 토큰") String passwordConfirmToken,
             @Valid @RequestBody UserInfoRequest request
     ) {
         userService.updateProfile(userId, passwordConfirmToken, request);
@@ -160,12 +169,11 @@ public class UserController {
     @PatchMapping("/me/password")
     @Operation(
             summary = "비밀번호 변경",
-            description = "발급받은 2차 인증 토큰을 사용합니다.",
-            security = { @SecurityRequirement(name = "JWT"), @SecurityRequirement(name = "Confirm Token") }
+            description = "새로운 비밀번호로 변경합니다. 'Confirm Token' 헤더가 필요합니다."
     )
     public ResponseEntity<Void> updatePassword(
             @AuthenticationPrincipal Long userId,
-            @RequestHeader("X-Password-Confirm-Token") String passwordConfirmToken,
+            @RequestHeader("X-Password-Confirm-Token") @Parameter(description = "비밀번호 검증 후 받은 토큰") String passwordConfirmToken,
             @Valid @RequestBody PasswordRequest.Update request
     ) {
         userService.updatePassword(userId, passwordConfirmToken, request.newPassword());
@@ -183,12 +191,11 @@ public class UserController {
     @DeleteMapping("/me")
     @Operation(
             summary = "회원 탈퇴",
-            description = "2차 인증 토큰을 사용하여 회원 정보를 삭제합니다.",
-            security = { @SecurityRequirement(name = "JWT"), @SecurityRequirement(name = "Confirm Token") }
+            description = "계정을 삭제하고 탈퇴 처리를 진행합니다. 'Confirm Token' 헤더가 필요합니다."
     )
     public ResponseEntity<Void> deleteUser(
             @AuthenticationPrincipal Long userId,
-            @RequestHeader("X-Password-Confirm-Token") String passwordConfirmToken,
+            @RequestHeader("X-Password-Confirm-Token") @Parameter(description = "비밀번호 검증 후 받은 토큰") String passwordConfirmToken,
             @Valid @RequestBody UserDeleteRequest request
     ) {
         userService.deleteUser(userId, passwordConfirmToken, request);
